@@ -1,30 +1,21 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Saaze;
 
 
 class BuildCommand {
-	protected static $defaultName = 'build';
+	protected static string $defaultName = 'build';
 
-	protected $buildDest;	// needed for rbase computation
+	protected string $buildDest;	// needed for rbase computation
 
-	/**
-	 * @var CollectionManagerInterface
-	 */
-	protected $collectionManager;
+	protected CollectionManager $collectionManager;
 
-	/**
-	 * @var EntryManagerInterface
-	 */
-	protected $entryManager;
+	protected EntryManager $entryManager;
 
-	/**
-	 * @var TemplateManagerInterface
-	 */
-	protected $templateManager;
+	protected TemplateManager $templateManager;
 
-	public function __construct(CollectionManager $collectionManager, EntryManager $entryManager, TemplateManager $templateManager)
-	{
+
+	public function __construct(CollectionManager $collectionManager, EntryManager $entryManager, TemplateManager $templateManager) {
 		//parent::__construct();
 
 		$this->collectionManager = $collectionManager;
@@ -32,10 +23,8 @@ class BuildCommand {
 		$this->templateManager   = $templateManager;
 	}
 
-	public function buildAllStatic($dest) {	//execute(InputInterface $input, OutputInterface $output)
+	public function buildAllStatic(string $dest) : void {	//execute(InputInterface $input, OutputInterface $output)
 		$t0 = microtime(true);
-
-		if (is_null($dest)) $dest = "build";	//$input->getOption('dest');
 
 		if (strpos($dest, '/') !== 0) {	// Does not start with '/'?
 			$dest = \Saaze\Config::$H['global_path_base'] . "/{$dest}";
@@ -61,7 +50,7 @@ class BuildCommand {
 			$totalPages = ceil($nentries / \Saaze\Config::$H['global_config_entries_per_page']);
 			printf("\texecute(): filePath=%s, nentries=%d, totalPages=%d, entries_per_page=%d\n",$collection->filePath,$nentries,$totalPages,\Saaze\Config::$H['global_config_entries_per_page']);
 
-			if ($this->buildCollectionIndex($collection, null, $dest)) {
+			if ($this->buildCollectionIndex($collection, 0, $dest)) {
 				$collectionCount++;
 			}
 
@@ -94,10 +83,8 @@ class BuildCommand {
 	}
 
 	// Build HTML and excerpt for one single Markdown file given on the command-line
-	public function buildSingleStatic($dest,$singleFile,$extractFile) {
+	public function buildSingleStatic(string $dest, string $singleFile, int $extractFile) : void {
 		$t0 = microtime(true);
-
-		if (is_null($dest)) $dest = "build";
 
 		if (strpos($dest, '/') !== 0) {	// Does not start with '/'?
 			$dest = \Saaze\Config::$H['global_path_base'] . "/{$dest}";
@@ -152,16 +139,12 @@ class BuildCommand {
 			$GLOBALS['excerpt'], $GLOBALS['excerptCached']);
 	}
 
-	/**
-	 * @param string $dest
-	 * @return void
-	 */
-	private function clearBuildDirectory($dest) {
+	private function clearBuildDirectory(string $dest) : void {
 		if (is_dir($dest)) $this->delTree($dest);
 	}
 
 	// From: https://www.php.net/manual/en/function.rmdir.php by nbari@dalmp.com
-	private function delTree($dir) {
+	private function delTree(string $dir) : bool {
 		foreach (array_diff(scandir($dir), array('.','..')) as $fn) {
 			$fn = $dir . DIRECTORY_SEPARATOR . $fn;
 			if (is_link($fn)) continue;	// do not remove symbolic links as they might point to somewhere outside the directory
@@ -170,25 +153,14 @@ class BuildCommand {
 		return rmdir($dir);
 	}
 
-	/**
-	 * @param string $full
-	 * @param string $dest
-	 * @return string
-	 */
-	private function compRbase($full,$dest) {
+	private function compRbase(string $full, string $dest) : string {
 		if (strpos($full,$dest) != 0) return "";	// this is an error
 		$cnt = substr_count(substr($full,strlen($dest)),"/") - 1;	// count slashes in overlapping part of $full
 		if ($cnt <= 0) return ".";
 		return rtrim(str_repeat("../",$cnt),"/");
 	}
 
-	/**
-	 * @param CollectionInterface $collection
-	 * @param int $page
-	 * @param string $dest
-	 * @return bool
-	 */
-	private function buildCollectionIndex(Collection $collection, $page, $dest) {
+	private function buildCollectionIndex(Collection $collection, int $page, string $dest) : bool {
 		if (!$collection->data['index_route']) {
 			return false;
 		}
@@ -201,7 +173,7 @@ class BuildCommand {
 
 		$collectionDir = rtrim($collectionDir, '/');
 
-		if ($page) {
+		if ($page != 0) {
 			$collectionDir .= "/page/{$page}";
 		}
 
@@ -216,13 +188,7 @@ class BuildCommand {
 		return true;
 	}
 
-	/**
-	 * @param CollectionInterface $collection
-	 * @param EntryInterface $entry
-	 * @param string $dest
-	 * @return bool
-	 */
-	private function buildEntry(Collection $collection, Entry $entry, $dest) {
+	private function buildEntry(Collection $collection, Entry $entry, string $dest) : bool {
 		if (!$collection->data['entry_route']) {
 			return false;
 		}
@@ -251,12 +217,7 @@ class BuildCommand {
 		return true;
 	}
 
-	/**
-	 * @param int $bytes
-	 * @return string
-	 */
-	private function humanSize($bytes)
-	{
+	private function humanSize(int $bytes) : string {
 		$i = floor(log($bytes, 1024));
 		return round($bytes / pow(1024, $i), [0,0,2,2,3][$i]).['B','kB','MB','GB','TB'][$i];
 	}

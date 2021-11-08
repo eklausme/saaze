@@ -1,13 +1,13 @@
-<?php
+<?php declare(strict_types=1);
 // Global config variables for Simplified Saaze
 
 namespace Saaze;
 
 
 class Config {
-	static public $H;	// hash for global config data
+	static public array $H;	// hash for global config data
 
-	static public function init() {
+	static public function init() : void {
 		if (!defined('SAAZE_PATH')) {
 			throw new \Exception('SAAZE_PATH is not defined');
 		}

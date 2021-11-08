@@ -1,19 +1,12 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Saaze;
 
 
 class CollectionManager {
-	/**
-	 * @var array
-	 */
-	protected $collections = [];
+	protected array $collections = [];
 
-	/**
-	 * @return array
-	 */
-	public function getCollections()
-	{
+	public function getCollections() : array {
 		if (empty($this->collections)) {
 			$this->loadCollections();
 		}
@@ -26,19 +19,13 @@ class CollectionManager {
 		return $this->collections;
 	}
 
-	protected function sortCollections()
-	{
+	protected function sortCollections() : void {
 		uasort($this->collections, function ($a, $b) {
 			return count(explode('/', $b->data['entry_route'])) <=> count(explode('/', $a->data['entry_route']));
 		});
 	}
 
-	/**
-	 * @param string $slug
-	 * @return \Saaze\Interfaces\CollectionInterface|null
-	 */
-	public function getCollection($slug)
-	{
+	public function getCollection(string $slug) : Collection|null {
 		$this->getCollections();
 
 		if (empty($this->collections[$slug])) {
@@ -48,10 +35,7 @@ class CollectionManager {
 		return $this->collections[$slug];
 	}
 
-	/**
-	 * @return array
-	 */
-	protected function loadCollections() {	// search Yaml files in content directory
+	protected function loadCollections() : array {	// search Yaml files in content directory
 		foreach(scandir(\Saaze\Config::$H['global_path_content']) as $fn) {
 			if (!is_dir($fn) && substr($fn,-4) === '.yml') {
 				$this->loadCollection(\Saaze\Config::$H['global_path_content'] . DIRECTORY_SEPARATOR . $fn);
@@ -61,12 +45,7 @@ class CollectionManager {
 		return $this->collections;
 	}
 
-	/**
-	 * @param string $filePath
-	 * @return \Saaze\Collection|null
-	 */
-	protected function loadCollection($filePath)
-	{
+	protected function loadCollection(string $filePath) : Collection|null {
 		if (!is_readable($filePath)) {	//file_exists()
 			return null;
 		}

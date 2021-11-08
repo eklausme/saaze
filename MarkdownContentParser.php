@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /* Extension modeled after: https://saaze.dev/docs/extending
    Elmar Klausmeier, 05-Apr-2021
    Elmar Klausmeier, 11-Apr-2021
@@ -21,11 +21,8 @@ class MarkdownContentParser {
 	/**
 	* xxx is string between [codepen] xxx [/codepen], and should be in format user / hash.
 	* Example: [codepen] thebabydino/eJrPoa [/codepen]
-	*
-	* @param string $xxx
-	* @return string
 	*/
-	static public function codepenHelper($xxx,&$flag,&$left,&$right) {
+	static public function codepenHelper(string $xxx, int &$flag, string &$left, string &$right) : string {
 		$code = explode("/",$xxx);
 		if (count($code) != 2) return $xxx;
 		if ($flag === 1) {
@@ -43,29 +40,22 @@ class MarkdownContentParser {
 	 * Overall slow. Also has trouble with Github-flavored tables.
 	 * But good example how to just convert Markdown to HTML
 	 *
-	 * @param string $content
-	 * @return string
-	public function toHtml(string $content,$frontmatter=null)
-	{
+	public function toHtml(string $content, array $frontmatter=null) : string {
 		return ParsedownExtra::instance()
 			->setBreaksEnabled(true)
 			->text($content);
 	}
 	 */
 
-	private $codepenFlag;	// JavaScript code for Codepen should only be included once
-	private $mermaidFlag;	// JavaScript code for Mermaid should only be included once
+	private int $codepenFlag;	// JavaScript code for Codepen should only be included once
 
 	/**
 	 * Work on abc $$uvw$$ xyz.
 	 * Needs MathJax. For this you have to include:
 	 *    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 	 *    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-	 *
-	 * @param string $content
-	 * @return string
 	 */
-	private function displayMath($content) {
+	private function displayMath(string $content) : string {
 		$last = 0;
 		for (;;) {
 			$start = strpos($content,"$$",$last);
@@ -91,10 +81,8 @@ class MarkdownContentParser {
 
 	/**
 	 * Work on abc $uvw$ xyz.
-	 * @param string $content
-	 * @return string
 	 */
-	private function inlineMath($content) {
+	private function inlineMath(string $content) : string {
 		$last = 0;
 		$i = 0;
 		for (;;) {
@@ -127,11 +115,8 @@ class MarkdownContentParser {
 	/**
 	 * Convert [abc]xxx[/uvw] tags in your markdown to HTML:
 	 * $begintag xxx $endtag -> $left xxx $right
-	 *
-	 * @param string $content, $begintag, $endtag, $left, $right
-	 * @return string
 	 */
-	private function myTag($content,$begintag,$endtag,$left,$right,$callback=NULL) {
+	private function myTag(string $content, string $begintag, string $endtag, string $left, string $right, string|null $callback=NULL) : string {
 		$last = 0;
 		$len1 = strlen($begintag);
 		$len2 = strlen($endtag);
@@ -155,11 +140,8 @@ class MarkdownContentParser {
 	 * <iframe width="560" height="315" src=https://www.youtube.com/embed/xxx
 	 *    frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 	 * Example: [youtube] a5pnnkXpX-U     [/youtube]
-	 *
-	 * @param string $content
-	 * @return string
 	 */
-	private function youtube($content) {
+	private function youtube(string $content) : string {
 		return $this->myTag($content, "[youtube]", "[/youtube]",
 			"<iframe width=560 height=315 src=https://www.youtube.com/embed/",
 			" frameborder=0 allow=\"accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe>"
@@ -172,11 +154,8 @@ class MarkdownContentParser {
 	 * <iframe src="https://player.vimeo.com/video/126529871" width="640" height="360"
 	 *     frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
 	 * Example: [vimeo] 126529871 [/vimeo]
-	 *
-	 * @param string $content
-	 * @return string
 	 */
-	private function vimeo($content) {
+	private function vimeo(string $content) : string {
 		return $this->myTag($content, "[vimeo]", "[/vimeo]",
 			"<iframe src=https://player.vimeo.com/video/",
 			" width=560 height=315 frameborder=0 allow=\"autoplay; fullscreen; picture-in-picture\" allowfullscreen></iframe>"
@@ -192,11 +171,8 @@ class MarkdownContentParser {
 	 *
 	 * Make sure that your layout-template contains the following:
 	 *    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
-	 *
-	 * @param string $content
-	 * @return string
 	 */
-	private function twitter($content) {
+	private function twitter(string $content) : string {
 		return $this->myTag($content, "[twitter]", "[/twitter]",
 			"<blockquote class=\"twitter-tweet\"><a href=\"",
 			"\"</a></blockquote>"
@@ -208,11 +184,8 @@ class MarkdownContentParser {
 	 * Convert [codepen] user / hash [/codepen] tags in your markdown to HTML.
 	 * Example: [codepen] thebabydino/eJrPoa [/codepen]
 	 * Needs codepenHelper() function to separate user/hash pair.
-	 *
-	 * @param string $content
-	 * @return string
 	 */
-	private function codepen($content) {
+	private function codepen(string $content) : string {
 		$left = "<p class=codepen data-height=300 data-default-tab=\"html,result\"";
 		// right-variable will be changed, if codepen occurs more than once
 		$right = " style=\"height:300px; box-sizing:border-box; display:flex;"
@@ -231,22 +204,16 @@ class MarkdownContentParser {
 	 *           "A": 75
 	 *           "B": 25
 	 *     [/mermaid]
-	 *
-	 * @param string $content
-	 * @return string
 	 */
-	private function mermaid($content) {
+	private function mermaid(string $content) : string {
 		return $this->myTag($content,"[mermaid]","[/mermaid]","\n<div class=mermaid>\n","\n</div>\n");
 	}
 
 
 	/**
 	 * Simply drop [more_WP_Tag], the WordPress <!--more--> tag
-	 *
-	 * @param string $content
-	 * @return string
 	 */
-	private function moreTag($content) {
+	private function moreTag(string $content) : string {
 		return str_replace("[more_WP_Tag]","",$content);
 	}
 
@@ -254,11 +221,8 @@ class MarkdownContentParser {
 	/**
 	 * [wpvideo xxx w=400 h=224] -> <iframe...></iframe>
 	 * <iframe width='400' height='224' src='https://video.wordpress.com/embed/RLkLgz2V?hd=0&amp;autoPlay=0&amp;permalink=0&amp;loop=0' frameborder='0' allowfullscreen></iframe>
-	 *
-	 * @param string $content
-	 * @return string
 	 */
-	private function wpvideo($content) {
+	private function wpvideo(string $content) : string {
 		return preg_replace(
 			'/\[wpvideo\s+(\w+)\s+w=(\w+)\s+h=(\w+)\s*\]/',
 			"<iframe width='$2' height='$3' src='https://video.wordpress.com/embed/$1&amp;autoplay=0' allowfullscreen></iframe>",
@@ -270,10 +234,8 @@ class MarkdownContentParser {
 	/**
 	 * Correct Markdown bug: ampersands wrongly htmlified in links
 	 * Convert href="http://a.com&amp;22" to href="http://a.com&22"
-	 * @param string $html
-	 * @return string
 	 */
-	private function amplink($html) {
+	private function amplink(string $html) : string {
 		$begintag = array(" href=\"http", " src=\"http");
 		$i = 0;
 		foreach($begintag as $tag) {
@@ -297,15 +259,12 @@ class MarkdownContentParser {
 
 	/**
 	 * Parse raw content and return HTML
-	 * @param string $content
-	 * @return string
 	 */
-	private $keywords = Array("[youtube]","[vimeo]","[twitter]","[codepen]","[wpvideo","[mermaid]");
+	private array $keywords = Array("[youtube]","[vimeo]","[twitter]","[codepen]","[wpvideo","[mermaid]");
 
-	public function toHtml(string $content,$frontmatter=null) {
+	public function toHtml(string $content, array $frontmatter=null) : string {
 		$t0 = microtime(true);
 		$this->codepenFlag = 0;	// reset for every new blog page
-		$this->mermaidFlag = 0;	// reset for every new blog page
 		$content = $this->moreTag($content);	// more-tag can occur anywhere
 
 		// Performance optimization only, no functional benefit.

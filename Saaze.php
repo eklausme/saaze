@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 /* This is only used in case of dynamic content.
    When generating static files, this is not needed or executed.
 
@@ -21,18 +21,12 @@ class Saaze {
 	public EntryManager $entryManager;
 	public TemplateManager $templateManager;
 
-	/**
-	 * @param string $saazePath
-	 */
-	public function __construct($saazePath) {
+	public function __construct(string $saazePath) {
 		define('SAAZE_PATH', $saazePath);
 		Config::init();
 	}
 
-	/**
-	 * @return void
-	 */
-	public function run() {
+	public function run() : bool {
 		$this->collectionManager = new \Saaze\CollectionManager();
 		$this->entryManager = new \Saaze\EntryManager();
 		$this->templateManager = new \Saaze\TemplateManager($this->entryManager);
@@ -40,7 +34,7 @@ class Saaze {
 		return $this->handle();
 	}
 
-	public function handle() {
+	public function handle() : bool {
 		// See https://www.php.net/manual/en/features.commandline.webserver.php
 		// Not required if web-server handles static files directly.
 		// For example, in Hiawatha config: RequestURI isfile Return
@@ -52,38 +46,37 @@ class Saaze {
 		// Below code required so that rbase work correctly in dynamic mode
 		// Emulate what Hiawatha web-server does on its own
 		if (substr($_SERVER["REQUEST_URI"],-1) !== '/')
-			header('Location: ' . $_SERVER["REQUEST_URI"] . '/'); // Redirect browser to same URL with slash added at end
+			header('Location: ' . $_SERVER['REQUEST_URI'] . '/'); // Redirect browser to same URL with slash added at end
 
-		$request_uri = rtrim($_SERVER["REQUEST_URI"],'/');
-		$msg = "";
+		$request_uri = rtrim($_SERVER['REQUEST_URI'],'/');
 		foreach ($this->collectionManager->getCollections() as $collection) {
-			if (isset($collection->data['entry_route'])) {
-				if (($slugStart = strpos($collection->data['entry_route'],"/{slug}")) === false) continue;	// no correct entry_route in collection yaml-file
-				$entryStart = substr($collection->data['entry_route'],0,$slugStart);
-				$entryStartLen = strlen($entryStart);
-				$page = null;
-				$msg .= ' [' . $entryStart . ':' . $entryStartLen . ',' . $page . ']';
-				if ($request_uri === $entryStart	// || preg_match('/^'.$entryStart.'\/page\/(\d+)$/',$pageMatch) === 1) {
-				|| (str_starts_with($request_uri,$entryStart.'/page/') && ctype_digit($page=substr($request_uri,$entryStartLen+6)))) {
-					$msg .= ' page='.$page;
-					$this->entryManager->setCollection($collection);
-					//$this->entryManager->entries = [];	// clear all read entries in EntryManager
-					$this->entryManager->getEntries();
-					echo $this->templateManager->renderCollection($collection, $page ?? 1);
-					return true;
-				}
-				if (str_starts_with($request_uri,$entryStart)) {
-					$singleFile = \Saaze\Config::$H['global_path_content'] . '/' . $collection->slug . substr($request_uri,strlen($entryStart)) . '.md';
-					$entry = new Entry($singleFile);
-					if (!isset($entry->data)) continue;
-					$entry->setCollection($collection);
-					$entry->getContent();
-					echo $this->templateManager->renderEntry($entry);
-					return true;
-				}
+			if (!isset($collection->data['entry_route'])) continue;
+			if (($slugStart = strpos($collection->data['entry_route'],"/{slug}")) === false) continue;	// no correct entry_route in collection yaml-file
+			$entryStart = substr($collection->data['entry_route'],0,$slugStart);
+			$entryStartLen = strlen($entryStart);
+			$page = null;
+			if (str_starts_with($request_uri,$entryStart)) {
+				$singleFile = \Saaze\Config::$H['global_path_content'] . '/' . $collection->slug . substr($request_uri,strlen($entryStart)) . '.md';
+				$entry = new Entry($singleFile);
+				if (isset($entry->data)) goto A;
+				$singleFile = \Saaze\Config::$H['global_path_content'] . '/' . $collection->slug . substr($request_uri,strlen($entryStart)) . '/index.md';
+				$entry = new Entry($singleFile);
+				if (!isset($entry->data)) goto B;
+				A: $entry->setCollection($collection);
+				$entry->getContent();
+				echo $this->templateManager->renderEntry($entry);
+				return true;
+			}
+			B: if ($request_uri === $entryStart
+			|| (str_starts_with($request_uri,$entryStart.'/page/') && ctype_digit($page=substr($request_uri,$entryStartLen+6)))) {
+				$this->entryManager->setCollection($collection);
+				//$this->entryManager->entries = [];	// clear all read entries in EntryManager
+				$this->entryManager->getEntries();
+				echo $this->templateManager->renderCollection($collection, $page ?? 1);
+				return true;
 			}
 		}
-		$msg .= "REQUEST_URI={$_SERVER['REQUEST_URI']}, request_uri={$request_uri}, entryStart={$entryStart}, slugStart={$slugStart}, singleFile={$singleFile}, page={$page}";
+		$msg = 'Not found';
 		echo $this->templateManager->renderError($msg, 404);
 		return true;
 	}

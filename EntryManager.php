@@ -1,37 +1,21 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Saaze;
 
 
 class EntryManager {
-	/**
-	 * @var CollectionInterface
-	 */
-	protected $collection;	// the EntryManager is for this collection only
+	protected Collection $collection;	// the EntryManager is for this collection only
 
-	/**
-	 * @var array
-	 */
-	public $entries = [];	// all entries for this collection
+	public array $entries = [];	// all entries for this collection
 
-	/**
-	 * @var array
-	 */
-	public $entriesSansIndex = [];	// all entries for this collection WITHOUT index.md, if any
+	public array $entriesSansIndex = [];	// all entries for this collection WITHOUT index.md, if any
 
-	/**
-	 * @param \Saaze\Interfaces\CollectionInterface $collection
-	 * @return void
-	 */
-	public function setCollection(Collection $collection) {
+	public function setCollection(Collection $collection) : void {
 		$this->collection = $collection;
 		//$this->entries    = [];	// clear entries
 	}
 
-	/**
-	 * @return array
-	 */
-	public function getEntries() {
+	public function getEntries() : array|null {
 		//if (empty($this->entries)) {
 		//	$this->loadEntries();
 		//}
@@ -55,7 +39,7 @@ class EntryManager {
 	}
 
 	// Sort array entriesSansIndex
-	protected function sortEntries() {
+	protected function sortEntries() : void {
 		if (empty($this->collection->data['sort_field'])) {
 			return;
 		}
@@ -76,38 +60,7 @@ class EntryManager {
 		});
 	}
 
-	/**
-	 * @param string $slug
-	 * @return EntryInterface|null
-	 */
-	//protected function getEntry($slug) {	// only used in class Router
-	//	$collectionDir = \Saaze\Config::$H['global_path_content'] . '/' . $this->collection->slug;
-	//	if (!is_dir($collectionDir)) {
-	//		return null;
-	//	}
-
-	//	if (empty($this->entries[$slug])) {
-	//		$entryPath = $collectionDir . "/{$slug}.md";
-	//		$entry = $this->loadEntry($entryPath);
-
-	//		if (!$entry) {
-	//			$entryPath = $collectionDir . "/{$slug}/index.md";
-	//			$entry = $this->loadEntry($entryPath);
-	//		}
-
-	//		if ($entry) {
-	//			$this->entries[$slug] = $entry;
-	//		}
-	//	}
-
-	//	return $this->entries[$slug] ?? null;
-	//}
-
-	/**
-	 * @return array
-	 */
-	protected function loadEntries()
-	{
+	protected function loadEntries() : array {
 		$collectionDir = \Saaze\Config::$H['global_path_content'] . '/' . $this->collection->slug;
 		if (!is_dir($collectionDir)) {
 			return [];
@@ -118,7 +71,7 @@ class EntryManager {
 		return $this->entries;
 	}
 
-	protected function loadMkdwnRecursive($dir) {	// recursively load Markdown files: *.md
+	protected function loadMkdwnRecursive(string $dir) : void {	// recursively load Markdown files: *.md
 		foreach (scandir($dir) as $fn) {
 		    if ($fn === '.' || $fn === '..') continue;
 		    $fn = $dir . DIRECTORY_SEPARATOR . $fn;
@@ -130,11 +83,7 @@ class EntryManager {
 		}
 	}
 
-	/**
-	 * @param string $filePath
-	 * @return EntryInterface|null
-	 */
-	protected function loadEntry($filePath) {
+	protected function loadEntry(string $filePath) : Entry|null {
 		//if (!file_exists($filePath)) {	// this case cannot occur, as loadEntry() is called after scandir(), but it can occur when called from class Router
 		//    return null;
 		//}
@@ -156,28 +105,7 @@ class EntryManager {
 		return $entry;
 	}
 
-	/**
-	 * @return array
-	 */
-	//private function getEntriesForTemplate() {	// no longer used
-	//	$entries = $this->getEntries();
-
-		// Quite expensive according XHProf
-		//$entries = array_map(function ($entry) {
-		//	return $this->getEntryForTemplate($entry);
-		//}, $entries);
-
-	//	return $entries;
-	//}
-
-	/**
-	 * @param array $entries
-	 * @param int $page
-	 * @param int $perPage
-	 * @return array
-	 */
-	public function paginateEntriesForTemplate($entries, $page, $perPage)
-	{
+	public function paginateEntriesForTemplate(array $entries, int $page, int $perPage) : array {
 		$totalEntries = count($entries);
 
 		if ($page < 1) {

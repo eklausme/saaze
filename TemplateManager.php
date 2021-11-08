@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Saaze;
 
@@ -6,27 +6,20 @@ namespace Saaze;
 
 
 class TemplateManager {
-	/**
-	 * @var EntryManagerInterface
-	 */
-	protected $entryManager;
+	protected EntryManager $entryManager;
 
 
 	public function __construct(EntryManager $entryManager) {
 		$this->entryManager = $entryManager;
 	}
 
-	/**
-	 * @param string $template
-	 * @return boolean
-	 */
-	public function templateExists($template) {
+	public function templateExists(string $template) : bool {
 		//return file_exists(\Saaze\Config::$H['global_path_templates'] . "/{$template}.blade.php");
 		return file_exists(\Saaze\Config::$H['global_path_templates'] . "/{$template}.php");
 	}
 
 
-	public function renderCollection(Collection $collection, $page) {
+	public function renderCollection(Collection $collection, int|string $page) : string {
 		$this->entryManager->setCollection($collection);
 
 		$template = 'index';	//'collection';
@@ -36,13 +29,13 @@ class TemplateManager {
 
 		//$entries    = $this->entryManager->entries;	//$this->entryManager->getEntriesForTemplate();
 		$entries    = $this->entryManager->entriesSansIndex;
-		$page       = filter_var($page, FILTER_SANITIZE_NUMBER_INT);	// end-user might fiddle with page in class Router
+		$page       = (int) filter_var($page, FILTER_SANITIZE_NUMBER_INT);	// end-user might fiddle with page in class Router
 		$perPage    = \Saaze\Config::$H['global_config_entries_per_page'];
 		$pagination = $this->entryManager->paginateEntriesForTemplate($entries, $page, $perPage);
 		$pagination['entries'] = array_map(function ($entry) { return $entry->data; }, $pagination['entries']);	// flatten entry
 
 		$collection = $collection->data;	// make some elements invisible in template
-		$rbase = $GLOBALS['rbase'];
+		$rbase = $GLOBALS['rbase'] ?? "/";
 
 		ob_start();
 		require \Saaze\Config::$H['global_path_templates'] . '/' . $template . ".php";
@@ -52,7 +45,7 @@ class TemplateManager {
 	}
 
 
-	public function renderEntry (Entry $entry) {
+	public function renderEntry (Entry $entry) : string {
 		$GLOBALS['renderEntry'] += 1;
 		//$this->entryManager->setCollection($entry->collection);	// not used
 
@@ -68,7 +61,7 @@ class TemplateManager {
 
 		$entry = $entryData;	// make some elements invisible in template
 		$title = $entry['title'];
-		$rbase = $GLOBALS['rbase'];
+		$rbase = $GLOBALS['rbase'] ?? "/";
 
 		ob_start();
 		require \Saaze\Config::$H['global_path_templates'] . "/" . $template . ".php";
@@ -77,13 +70,7 @@ class TemplateManager {
 		return $buf;
 	}
 
-	/**
-	 * @param string $message
-	 * @param int $code
-	 * @return string
-	 */
-	public function renderError($message, $code)
-	{
+	public function renderError(string $message, int $code) : string {
 		$template = 'error';
 		if ($this->templateExists("error{$code}")) {
 			$template = "error{$code}";
@@ -93,7 +80,7 @@ class TemplateManager {
 			return "{$code} {$message}";
 		}
 
-		$rbase = $GLOBALS['rbase'];
+		$rbase = $GLOBALS['rbase'] ?? "/";
 
 		ob_start();
 		require \Saaze\Config::$H['global_path_templates'] . "/" . $template . ".php";

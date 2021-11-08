@@ -1,14 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Saaze;
 
 
-class SaazeCli
-{
-	/**
-	 * @param string $saazePath
-	 */
-	public function __construct($saazePath) {
+class SaazeCli {
+	public function __construct(string $saazePath) {
 		define('SAAZE_PATH', $saazePath);
 		Config::init();
 	}
@@ -44,9 +40,9 @@ class SaazeCli
 			"---------------\n";
 	}
 
-	public function run() {
+	public function run() :void {
 		//$this->startXhprof();
-		$dest = "build";
+		$dest = 'build';
 		$singleFile = null;
 		$extractFile = 0;
 
