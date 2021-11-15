@@ -48,18 +48,28 @@ class Saaze {
 		if (substr($_SERVER["REQUEST_URI"],-1) !== '/')
 			header('Location: ' . $_SERVER['REQUEST_URI'] . '/'); // Redirect browser to same URL with slash added at end
 
-		$request_uri = rtrim($_SERVER['REQUEST_URI'],'/');
+		// REQUEST_URI is the original URL typed by the end-user.
+		// QUERY_STRING can be either empty, or is the string resulting from any rewriting-rules within the web-server.
+		// QUERY_STRING usually lacks the leading '/', therefore added below.
+		//file_put_contents('/tmp/s9',"\nREQUEST_URI=|{$_SERVER['REQUEST_URI']}|, QUERY_STRING=|{$_SERVER['QUERY_STRING']}|\n",FILE_APPEND);
+		//$request_uri = rtrim($_SERVER['REQUEST_URI'],'/');
+		$query_string = isset($_SERVER['QUERY_STRING']) ? '/' . ltrim($_SERVER['QUERY_STRING'],'/') : null;
+		$request_uri = rtrim($query_string ?? $_SERVER['REQUEST_URI'],'/');
+		//file_put_contents('/tmp/s9',"request_uri=|{$request_uri}|\n",FILE_APPEND);
 		foreach ($this->collectionManager->getCollections() as $collection) {
 			if (!isset($collection->data['entry_route'])) continue;
 			if (($slugStart = strpos($collection->data['entry_route'],"/{slug}")) === false) continue;	// no correct entry_route in collection yaml-file
 			$entryStart = substr($collection->data['entry_route'],0,$slugStart);
 			$entryStartLen = strlen($entryStart);
+			//file_put_contents('/tmp/s9',"collection->slug=|{$collection->slug}|, ->data[entry_route]=|{$collection->data['entry_route']}|, entryStart=|{$entryStart}|\n",FILE_APPEND);
 			$page = null;
 			if (str_starts_with($request_uri,$entryStart)) {
 				$singleFile = \Saaze\Config::$H['global_path_content'] . '/' . $collection->slug . substr($request_uri,strlen($entryStart)) . '.md';
+				//file_put_contents('/tmp/s9',"collection->slug=|{$collection->slug}|, singleFile1=|{$singleFile}|\n",FILE_APPEND);
 				$entry = new Entry($singleFile);
 				if (isset($entry->data)) goto A;
 				$singleFile = \Saaze\Config::$H['global_path_content'] . '/' . $collection->slug . substr($request_uri,strlen($entryStart)) . '/index.md';
+				//file_put_contents('/tmp/s9',"collection->slug=|{$collection->slug}|, singleFile2=|{$singleFile}|\n",FILE_APPEND);
 				$entry = new Entry($singleFile);
 				if (!isset($entry->data)) goto B;
 				A: $entry->setCollection($collection);
@@ -69,6 +79,7 @@ class Saaze {
 			}
 			B: if ($request_uri === $entryStart
 			|| (str_starts_with($request_uri,$entryStart.'/page/') && ctype_digit($page=substr($request_uri,$entryStartLen+6)))) {
+				//file_put_contents('/tmp/s9',"collection->slug=|{$collection->slug}|, match: entryStart=|${entryStart}|\n",FILE_APPEND);
 				$this->entryManager->setCollection($collection);
 				//$this->entryManager->entries = [];	// clear all read entries in EntryManager
 				$this->entryManager->getEntries();
