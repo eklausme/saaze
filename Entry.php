@@ -26,7 +26,7 @@ class Entry {
 		$t0 = microtime(true);
 		// We proved that filePath as many times as collection has pages
 		//file_put_contents("/tmp/parseEntry.txt",$filePath." ".debug_backtrace()[1]['function']." ".debug_backtrace()[2]['function']." ".debug_backtrace()[3]['function']."\n",FILE_APPEND);
-		$content = file_get_contents($filePath);
+		$content = @file_get_contents($filePath);
 		if ($content === false) return null;
 
 		$n3dash = 0;	// count number of triple dashes
