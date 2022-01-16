@@ -116,7 +116,7 @@ class BuildCommand {
 		$entry->getContent();
 		if (!$this->buildEntry($collection, $entry, $dest))
 			exit("Cannot create entry\n");
-		if ($extractFile) {
+		if ($extractFile) {	// Idea: excerpt is merged into index either manually or via script
 			$entry->getExcerpt();
 			file_put_contents("excerpt.txt",sprintf("title:\t<a href=\"%s%s>%s</a>\ndate:\t%s\n\n%s\n",
 				$GLOBALS['rbase'], $entry->data['url'], $entry->data['title'],

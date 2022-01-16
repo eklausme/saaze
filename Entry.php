@@ -78,12 +78,12 @@ class Entry {
 	public function slug() : string {
 		$dotPos = strrpos($this->filePath, '.');
 		if ($dotPos === false) exit("{$this->filePath} does not contain dot.");
-		$slug = substr($this->filePath, 0, $dotPos);
-		$slug = str_replace(\Saaze\Config::$H['global_path_content'], '', $slug);
-		$slug = str_replace("/{$this->collection->slug}", '', $slug);
-		$slug = ltrim($slug, '/');
+		$slugStr = substr($this->filePath, 0, $dotPos);
+		$slugStr = str_replace(\Saaze\Config::$H['global_path_content'], '', $slugStr);
+		$slugStr = str_replace("/{$this->collection->slug}", '', $slugStr);
+		$slugStr = ltrim($slugStr, '/');
 
-		return $slug;
+		return $slugStr;
 	}
 
 	public function getUrl() : string {
@@ -91,10 +91,10 @@ class Entry {
 			return $this->data['url'];
 		}
 
-		$slug = $this->slug();
+		$slugStr = $this->slug();
 
-		//return rtrim(str_replace('{slug}', $slug, $this->collection->data['entry_route']), '/');
-		$this->data['url'] = rtrim(str_replace('{slug}', $slug, $this->collection->data['entry_route']), '/');
+		//return rtrim(str_replace('{slug}', $slugStr, $this->collection->data['entry_route']), '/');
+		$this->data['url'] = rtrim(str_replace('{slug}', $slugStr, $this->collection->data['entry_route']), '/');
 		return $this->data['url'];
 	}
 

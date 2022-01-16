@@ -34,6 +34,8 @@ class TemplateManager {
 		$pagination = $this->entryManager->paginateEntriesForTemplate($entries, $page, $perPage);
 		$pagination['entries'] = array_map(function ($entry) { return $entry->data; }, $pagination['entries']);	// flatten entry
 
+		$url = $collection->data['index_route'];
+		if ($page > 1) $url .= "/page/{$page}";
 		$collection = $collection->data;	// make some elements invisible in template
 		$rbase = $GLOBALS['rbase'] ?? "/";
 
@@ -59,8 +61,9 @@ class TemplateManager {
 			$template = $entry->collection->slug . '/entry';
 		}
 
+		$url = $entryData['url'];
+		$title = $entryData['title'];
 		$entry = $entryData;	// make some elements invisible in template
-		$title = $entry['title'];
 		$rbase = $GLOBALS['rbase'] ?? "/";
 
 		ob_start();

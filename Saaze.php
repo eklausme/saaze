@@ -74,6 +74,7 @@ class Saaze {
 				if (!isset($entry->data)) goto B;
 				A: $entry->setCollection($collection);
 				$entry->getContent();
+				$entry->getUrl();
 				echo $this->templateManager->renderEntry($entry);
 				return true;
 			}
@@ -87,8 +88,8 @@ class Saaze {
 				return true;
 			}
 		}
-		$msg = 'Not found';
-		echo $this->templateManager->renderError($msg, 404);
+		http_response_code(404); 
+		echo $this->templateManager->renderError('Not found', 404);
 		return true;
 	}
 }

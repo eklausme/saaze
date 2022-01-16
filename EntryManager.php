@@ -95,12 +95,12 @@ class EntryManager {
 		$this->entries[$entry->slug()] = $entry;
 
 		// Attempt to reduce massive number of calls to content()
-		$entry->getUrl();
-		$entry->getContent();
+		$entry->getContent();	# initializes data[]
+		$entry->getUrl();	# must be computed after getContent()
 		$entry->getExcerpt();
 
 		if (substr($entry->filePath,-9) !== '/index.md')
-				$this->entriesSansIndex[] = $entry;
+			$this->entriesSansIndex[] = $entry;
 
 		return $entry;
 	}
