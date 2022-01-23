@@ -4,11 +4,16 @@ namespace Saaze;
 
 
 class EntryManager {
+	public bool $draft;
 	protected Collection $collection;	// the EntryManager is for this collection only
 
 	public array $entries = [];	// all entries for this collection
 
 	public array $entriesSansIndex = [];	// all entries for this collection WITHOUT index.md, if any
+
+	public function __construct(bool $draft = true) {
+		$this->draft = $draft;
+	}
 
 	public function setCollection(Collection $collection) : void {
 		$this->collection = $collection;
@@ -16,12 +21,6 @@ class EntryManager {
 	}
 
 	public function getEntries() : array|null {
-		//if (empty($this->entries)) {
-		//	$this->loadEntries();
-		//}
-		//if (empty($this->entries)) {
-		//	return $this->entries;
-		//}
 		$this->entries = [];	// clear all entries in EntryManager
 		$this->entriesSansIndex = [];
 		$this->loadEntries();
@@ -84,12 +83,10 @@ class EntryManager {
 	}
 
 	protected function loadEntry(string $filePath) : Entry|null {
-		//if (!file_exists($filePath)) {	// this case cannot occur, as loadEntry() is called after scandir(), but it can occur when called from class Router
-		//    return null;
-		//}
-
 		$entry = new Entry($filePath);	//container()->make(EntryInterface::class, ['filePath' => $filePath]);
-		if (!isset($entry->data)) return null;	// only for class Router
+		if (!isset($entry->data)) return null;	// only for class Router (=now Saaze.php)
+		if ($this->draft == false && array_key_exists('draft',$entry->data)
+		&& $entry->data['draft']) return null;
 		$entry->setCollection($this->collection);
 
 		$this->entries[$entry->slug()] = $entry;

@@ -45,21 +45,23 @@ class SaazeCli {
 		$dest = 'build';
 		$singleFile = null;
 		$extractFile = 0;
+		$draft = false;	// =false: do not show drafts, =true: show drafts
 
-		$options = getopt("d:es:");
+		$options = getopt("d:efs:");
 		//var_dump($options);
 		if (count($options) > 0) {
 			if (isset($options['d']) && strlen($options['d']) > 0 && $options['d'] !== "/") {
 				$dest = $options['d'];
 			}
 			if (isset($options['e'])) $extractFile = 1;
+			if (isset($options['f'])) $draft = true;
 			if (isset($options['s']) && strlen($options['s']) > 0 && $options['s'] !== "/") {
 				$singleFile = $options['s'];
 			}
 		}
 
 		$collectionManager = new \Saaze\CollectionManager();
-		$entryManager = new \Saaze\EntryManager();
+		$entryManager = new \Saaze\EntryManager($draft);
 		$templateManager = new \Saaze\TemplateManager($entryManager);
 		$buildMgr = new \Saaze\BuildCommand($collectionManager,$entryManager,$templateManager);
 
