@@ -92,6 +92,7 @@ class Entry {
 		}
 
 		$slugStr = $this->slug();
+		if (substr($slugStr,-6) === '/index') $slugStr = substr($slugStr,0,-6);	// strip '/index'
 
 		//return rtrim(str_replace('{slug}', $slugStr, $this->collection->data['entry_route']), '/');
 		$this->data['url'] = rtrim(str_replace('{slug}', $slugStr, $this->collection->data['entry_route']), '/');
