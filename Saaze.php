@@ -43,7 +43,7 @@ class Saaze {
 		//	return false;    // serve the requested resource as-is from the surrounding web-server
 		//}
 
-		// Below code required so that rbase work correctly in dynamic mode
+		// Below code required so that rbase works correctly in dynamic mode
 		// Emulate what Hiawatha web-server does on its own
 		if (substr($_SERVER["REQUEST_URI"],-1) !== '/')
 			header('Location: ' . $_SERVER['REQUEST_URI'] . '/'); // Redirect browser to same URL with slash added at end
@@ -73,7 +73,7 @@ class Saaze {
 				$entry = new Entry($singleFile);
 				if (!isset($entry->data)) goto B;
 				A: $entry->setCollection($collection);
-				$entry->getContent();
+				$entry->getContentAndExcerpt();	//$entry->getContent();
 				$entry->getUrl();
 				echo $this->templateManager->renderEntry($entry);
 				return true;

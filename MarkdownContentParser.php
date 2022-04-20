@@ -6,6 +6,9 @@
    Elmar Klausmeier, 30-Aug-2021, added codepen()
    Elmar Klausmeier, 06-Sep-2021, no longer extension, but included in class MarkdownContentParser
    Elmar Klausmeier, 18-Sep-2021, added mermaid()
+   Elmar Klausmeier, 12-Apr-2022, added gallery()
+   Elmar Klausmeier, 15-Apr-2022, debugged gallery()
+   Elmar Klausmeier, 18-Apr-2022, integrated excerpt
 */
 
 namespace Saaze;
@@ -13,6 +16,79 @@ namespace Saaze;
 //use ParsedownExtra;	// notoriously slow
 
 class MarkdownContentParser {
+
+	const GALLERY_CSS0 = <<<EOD
+/* From:  https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_slideshow_gallery */
+* { box-sizing: border-box; }
+
+img { vertical-align: middle; }
+
+/* Position the image container (needed to position the left and right arrows) */
+.gallery_container { position: relative; }
+
+.gallery_cursor { cursor: pointer; } /* Add a pointer when hovering over the thumbnail images */
+
+.gallery_prev, .gallery_next { /* Next & previous buttons */
+	cursor: pointer;
+	position: absolute;
+	top: 40%;
+	width: auto;
+	padding: 16px;
+	margin-top: -50px;
+	color: white;
+	font-weight: bold;
+	font-size: 20px;
+	border-radius: 0 3px 3px 0;
+	user-select: none;
+	-webkit-user-select: none;
+}
+
+/* Position the "next button" to the right */
+.gallery_next { right: 0; border-radius: 3px 0 0 3px; }
+
+/* On hover, add a black background color with a little bit see-through */
+.gallery_prev:hover, .gallery_next:hover { background-color: rgba(0, 0, 0, 0.8); }
+
+.gallery_numbertext { /* Number text (1/3 etc) */
+	color: #f2f2f2;
+	font-size: 12px;
+	padding: 8px 12px;
+	position: absolute;
+	top: 0;
+}
+
+.gallery_caption_container { /* Container for image text */
+	text-align: center;
+	background-color: #222;
+	padding: 2px 16px;
+	color: white;
+}
+
+EOD;
+	const GALLERY_JS0 = <<<EOD
+var slideIndex = new Array();
+
+function plusSlides(k,n) { showSlides(k,slideIndex[k] += n); }
+function currentSlide(k,n) { showSlides(k,slideIndex[k] = n); }
+
+function showSlides(k,n) {
+	var i;
+	var slides = document.getElementsByClassName("gallery_slides"+k);
+	var dots = document.getElementsByClassName("gallery_demo"+k);
+	var captionText = document.getElementById("gallery_caption"+k);
+	if (n > slides.length) {slideIndex[k] = 1}
+	if (n < 1) {slideIndex[k] = slides.length}
+	for (i=0; i < slides.length; i++)
+		slides[i].style.display = "none";
+	for (i=0; i < dots.length; i++)
+		dots[i].className = dots[i].className.replace(" active", "");
+	slides[slideIndex[k]-1].style.display = "block";
+	dots[slideIndex[k]-1].className += " active";
+	captionText.innerHTML = dots[slideIndex[k]-1].alt.length ?
+		dots[slideIndex[k]-1].alt : slideIndex[k] + " / " + slides.length;
+}
+
+EOD;
 
 	//public function __construct() {
 	//	// initialize md4c so that we can use it in parallel
@@ -27,12 +103,12 @@ class MarkdownContentParser {
 		if (count($code) != 2) return $xxx;
 		if ($flag === 1) {
 			$flag = 2;
-			$right = " style=\"height:300px; box-sizing:border-box; display:flex;"
-				. " align-items:center; justify-content:center;"
-				. " border:2px solid; margin:1em 0; padding:1em;\">";
+			$right = ' style="height:300px; box-sizing:border-box; display:flex;'
+				. ' align-items:center; justify-content:center;'
+				. ' border:2px solid; margin:1em 0; padding:1em;">';
 		} else if ($flag === 0) $flag = 1;
-		return	" data-slug-hash=" . trim($code[1])
-			. " data-user=" . trim($code[0]);
+		return	' data-slug-hash=' . trim($code[1])
+			. ' data-user=' . trim($code[0]);
 	}
 
 
@@ -48,6 +124,9 @@ class MarkdownContentParser {
 	 */
 
 	private int $codepenFlag;	// JavaScript code for Codepen should only be included once
+	private int $numOfGalleries;	// count number of galleries in one blog post
+	private string $css;	// CSS before HTML
+	private string $js;	// JavaScript after HTML
 
 	/**
 	 * Work on abc $$uvw$$ xyz.
@@ -58,15 +137,15 @@ class MarkdownContentParser {
 	private function displayMath(string $content) : string {
 		$last = 0;
 		for (;;) {
-			$start = strpos($content,"$$",$last);
+			$start = strpos($content,'$$',$last);
 			if ($start === false) break;
-			$end = strpos($content,"$$",$start+2);
+			$end = strpos($content,'$$',$start+2);
 			if ($end === false) break;
 			$last = $end + 2;
 			$math = substr($content,$start,$last-$start);
-			$math = str_replace("\\>","\\: ",$math);
-			$math = str_replace("<","\\lt ",$math);
-			$math = str_replace(">","\\gt ",$math);
+			$math = str_replace('\>','\: ',$math);
+			$math = str_replace('<','\lt ',$math);
+			$math = str_replace('>','\gt ',$math);
 //printf("toHtml(): fileToRender=%s, last=%d, start=%d, end=%d, %s[%s]\n",$GLOBALS['fileToRender'],$last,$start,$end,substr($content,$start,$end-$start+2),substr($content,0,12));
 			$content = substr($content,0,$start)
 				. "\n<div class=math>\n"
@@ -87,26 +166,26 @@ class MarkdownContentParser {
 		$i = 0;
 		for (;;) {
 			//if (++$i > 10) break;
-			$start = strpos($content,"$",$last);
+			$start = strpos($content,'$',$last);
 			if ($start === false) break;
 			// Check if display math with double dollar found?
-			if (substr($content,$start+1,1) == "$") { $last = $start + 2; continue; }
-			$end = strpos($content,"$",$start+1);
+			if (substr($content,$start+1,1) == '$') { $last = $start + 2; continue; }
+			$end = strpos($content,'$',$start+1);
 			if ($end === false) break;
 			// Check for display math again, just in case
 			if (substr($content,$end+1,1) == "$") { $last = $end + 2; continue; }
 			// Replace $xyz$" with \\(xyz\\)
 			$last = $end + 1;
 			$math = substr($content,$start+1,$end-$start-1);
-			$math = str_replace("_","\\_",$math);
-			$math = str_replace("\\{","\\\\{",$math);
-			$math = str_replace("\\}","\\\\}",$math);
+			$math = str_replace('_','\_',$math);
+			$math = str_replace('\\{','\\\\{',$math);
+			$math = str_replace('\\}','\\\\}',$math);
 			$content = substr($content,0,$start)
-				. "\\\\("
+				. '\\\\('
 				. $math
-				. "\\\\)"
+				. '\\\\)'
 				. substr($content,$end+1);
-			$last = $start + strlen("\\\\(") + strlen($math) + strlen("\\\\)");
+			$last = $start + strlen('\\\\(') + strlen($math) + strlen('\\\\)');
 		}
 		return $content;
 	}
@@ -211,6 +290,91 @@ class MarkdownContentParser {
 
 
 	/**
+	 * Convert [gallery] directory regex [/gallery] tags in your markdown to HTML.
+	 * Example:
+	 *     [gallery] img/gallery /IMG_20220401.*\.webp/ [/gallery]
+	 * CSS+JS taken from
+	 *     https://www.w3schools.com/howto/tryit.asp?filename=tryhow_js_slideshow_gallery
+	 */
+	private function gallery(string $content) : string {
+		$last = 0;
+		for ($i=0;;++$i) {
+			//if (++$i > 10) break;
+			$start = strpos($content,'[gallery]',$last);
+			if ($start === false) break;
+			$end = strpos($content,'[/gallery]',$start+9);
+			if ($end === false) break;
+			$last = $end + 10;
+			$mid = trim(substr($content,$start+9,$end-$start-9));	// get rid of spaces at begin+end
+			$midx = strpos($mid,' ');
+			if ($midx === false) break;	// lacking separator between directory & regex
+			$dirWeb = substr($mid,0,$midx);
+			$dir = \Saaze\Config::$H['global_path_public'] . $dirWeb;
+			$regex = substr($mid,$midx+1);
+			if ($i === 0) {
+				$this->css = "\n<style>\n";
+				$this->js = "\n<script>\n";
+			}
+			if (($this->numOfGalleries += 1) <= 1) {
+				$this->css .= self::GALLERY_CSS0;
+				$this->js .= self::GALLERY_JS0;
+			}
+			$cnt = 0;
+			$dirlist = scandir($dir);
+			$photolist = array();
+			foreach ($dirlist as $fn) {
+				if ($fn === '.' || $fn === '..') continue;
+				if (preg_match($regex,$fn) !== 1) continue;
+				if (is_dir($fn)) continue;
+				$photolist[] = $fn;	// push filename
+				++$cnt;
+			}
+
+			/* Example: Six columns side by side. CSS is dependant on number of photos. */
+			$this->css .= "\n.gallery_slides{$this->numOfGalleries} { display: none; } /* Hide the images by default */\n"
+				. ".gallery_row{$this->numOfGalleries}:after { content: \"\"; display: table; clear: both; }\n"
+				. sprintf(".gallery_column%d { float:left; width:%f%%; }\n",$this->numOfGalleries,100/$cnt)
+				. ".gallery_demo{$this->numOfGalleries} { opacity: 0.6; } /* Add a transparency effect for thumbnail images */\n"
+				. ".active, .gallery_demo{$this->numOfGalleries}:hover { opacity: 1; }\n";
+			$this->js .= "slideIndex[{$this->numOfGalleries}] = 1;\n"
+				. "showSlides({$this->numOfGalleries},slideIndex[{$this->numOfGalleries}]);\n";
+
+			$html = "<div class=\"gallery_container\">\n";
+			$k=0;
+			foreach ($photolist as $fn) {
+				$html .= sprintf("\t<div class=gallery_slides%d style=\"display:%s;\"><div class=gallery_numbertext>"
+					. "%d / %d</div><img src=\"%s/%s\" alt=\"%s\" style=\"width:100%%\"></div>\n",
+					$this->numOfGalleries, $k ? "none":"block", $k+1, $cnt, $dirWeb, $fn, $fn);
+				++$k;
+			}
+			$html .= "\t<a class=\"gallery_prev\" onclick=\"plusSlides({$this->numOfGalleries},-1)\">❮</a>\n"
+				. "\t<a class=\"gallery_next\" onclick=\"plusSlides({$this->numOfGalleries},1)\">❯</a>\n"
+				. "\t<div class=gallery_caption_container><p id=gallery_caption{$this->numOfGalleries}></p></div>\n"
+				. "\t<div class=\"gallery_row{$this->numOfGalleries}\">\n";
+			$k=0;
+			foreach ($photolist as $fn) {
+				$html .= sprintf("\t\t<div class=gallery_column%d>"
+					. "<img class=\"gallery_demo%d gallery_cursor%s\" "
+					. "src=\"%s/%s\" alt=\"%s\" style=\"width:100%%\" onclick=\"currentSlide(%d,%d)\"></div>\n",
+					$this->numOfGalleries, $this->numOfGalleries, $k ? "":" active",
+					$dirWeb, $fn, $fn, $this->numOfGalleries, $k+1);
+				++$k;
+			}
+			$html .= "\t</div>\n</div>\n";
+
+			//$tst = "\ndir=$dir, dirWeb=$dirWeb regex=$regex, mid=|$mid|, midx=$midx, rbase={$GLOBALS['rbase']}\n";
+			$content = substr($content,0,$start) . $html . substr($content,$end+10);
+			$last = $start + strlen($html);
+		}
+		if ($i > 0) {
+			$this->css .= "</style>\n\n";
+			$this->js .= "</script>\n\n";
+		}
+		return $content;
+	}
+
+
+	/**
 	 * Simply drop [more_WP_Tag], the WordPress <!--more--> tag
 	 */
 	private function moreTag(string $content) : string {
@@ -257,20 +421,37 @@ class MarkdownContentParser {
 	}
 
 
+	private function getExcerpt(string $html) {
+		$excerpt = strip_tags($html);
+
+		if (strlen($excerpt) > ($length = \Saaze\Config::$H['global_excerpt_length'])) {
+			$excerptCut = substr($excerpt, 0, $length);
+			$endPoint   = strrpos($excerptCut, ' ');
+			$excerpt    = $endPoint ? substr($excerptCut, 0, $endPoint) : substr($excerptCut, 0);
+			$excerpt    .= '&hellip;';
+		}
+		return $excerpt;
+	}
+
+
 	/**
 	 * Parse raw content and return HTML
 	 */
-	private array $keywords = Array("[youtube]","[vimeo]","[twitter]","[codepen]","[wpvideo","[mermaid]");
+	private array $keywords = Array('[youtube]','[vimeo]','[twitter]','[codepen]','[wpvideo','[mermaid]','[gallery]');
 
-	public function toHtml(string $content, array $frontmatter=null) : string {
+	// pass by reference for frontmatter important for excerpt
+	public function toHtml(string $content, array &$frontmatter=null) : string {
 		$t0 = microtime(true);
 		$this->codepenFlag = 0;	// reset for every new blog page
+		$this->numOfGalleries = 0;	// reset for every new blog page
+		$this->css = "";
+		$this->js = "";
 		$content = $this->moreTag($content);	// more-tag can occur anywhere
 
 		// Performance optimization only, no functional benefit.
 		// Only marginally relevant if you have more than a few hundred posts.
 		$hasKeyword = 0;	// used as bitset
-		for ($i=0; $i<6; ++$i) {
+		for ($i=0; $i<7; ++$i) {
 			if (strpos($content,$this->keywords[$i]) === false) continue;
 			$hasKeyword |= 1 << $i;
 		}
@@ -280,8 +461,9 @@ class MarkdownContentParser {
 		$hasCodepen = $hasKeyword & 8;
 		$hasWpvideo = $hasKeyword & 16;
 		$hasMermaid = $hasKeyword & 32;
+		$hasGallery = $hasKeyword & 64;
 		$hasMath = isset($frontmatter['MathJax']);
-		if ($hasMath) $hasKeyword |= 64;
+		if ($hasMath) $hasKeyword |= 128;
 
 		if ($hasKeyword) {
 			$arr = explode("`",$content);	// known deficiency: does not cope for HTML comments
@@ -320,6 +502,7 @@ class MarkdownContentParser {
 				if ($hasCodepen) $arr[$i] = $this->codepen($arr[$i]);
 				if ($hasWpvideo) $arr[$i] = $this->wpvideo($arr[$i]);
 				if ($hasMermaid) $arr[$i] = $this->mermaid($arr[$i]);
+				if ($hasGallery) $arr[$i] = $this->gallery($arr[$i]);
 			}
 			$modContent = implode("`",$arr);
 		} else {
@@ -331,6 +514,8 @@ class MarkdownContentParser {
 		$GLOBALS['MathParserNcall'] += 1;
 		//$html = parent::toHtml($modConent);	// markdown to HTML
 		$html = \FFI::string( $GLOBALS['ffi']->md4c_toHtml($modContent) );
+		if (isset($frontmatter)) $frontmatter['excerpt'] = $this->getExcerpt($html);
+		$html = $this->css . $html . $this->js;
 		$GLOBALS['md2html'] += microtime(true) - $t1;
 
 		return $this->amplink($html);	// fix Markdown ampersand handling

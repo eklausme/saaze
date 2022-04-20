@@ -112,12 +112,12 @@ class BuildCommand {
 		$collection = new Collection(\Saaze\Config::$H['global_path_content'] . "/" . $collectionId . ".yml");
 		$entry = new Entry($singleFile);
 		$entry->setCollection($collection);
-		$entry->getUrl();
-		$entry->getContent();
+		$entry->getContentAndExcerpt();	//$entry->getContent();
+		$entry->getUrl();	# must be computed after getContent()
 		if (!$this->buildEntry($collection, $entry, $dest))
 			exit("Cannot create entry\n");
 		if ($extractFile) {	// Idea: excerpt is merged into index either manually or via script
-			$entry->getExcerpt();
+			//$entry->getExcerpt();
 			file_put_contents("excerpt.txt",sprintf("title:\t<a href=\"%s%s>%s</a>\ndate:\t%s\n\n%s\n",
 				$GLOBALS['rbase'], $entry->data['url'], $entry->data['title'],
 				date('jS F Y', strtotime($entry->data['date'])),

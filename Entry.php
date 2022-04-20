@@ -99,40 +99,49 @@ class Entry {
 		return $this->data['url'];
 	}
 
-	public function getContent() : string {
+	//private function getContent() : string {
+	//	$GLOBALS['content'] += 1;
+	//	if (array_key_exists('content',$this->data)) {	//if ($this->data->has('content')) {
+	//		$GLOBALS['contentCached'] += 1;
+	//		return $this->data['content'];
+	//	}
+
+	//	//return $this->contentParser->toHtml($this->data['content_raw'],$this->data);
+	//	$this->data['content'] = $this->contentParser->toHtml($this->data['content_raw'],$this->data);
+	//	return $this->data['content'];
+	//}
+
+	//private function getExcerpt(int $length = 300) : string {
+	//	$GLOBALS['excerpt'] += 1;
+	//	if (array_key_exists('excerpt',$this->data)) {	//if ($this->data->has('excerpt')) {
+	//		$GLOBALS['excerptCached'] += 1;
+	//		return $this->data['excerpt'];
+	//	}
+
+	//	$content = $this->getContent();
+	//	if (!$content) {
+	//		return $content;
+	//	}
+
+	//	$excerpt = strip_tags($content);
+
+	//	if (strlen($excerpt) > $length) {
+	//		$excerptCut = substr($excerpt, 0, $length);
+	//		$endPoint   = strrpos($excerptCut, ' ');
+	//		$excerpt    = $endPoint ? substr($excerptCut, 0, $endPoint) : substr($excerptCut, 0);
+	//		$excerpt    .= '&hellip;';
+	//	}
+
+	//	$this->data['excerpt'] = $excerpt;
+	//	return $excerpt;
+	//}
+
+	public function getContentAndExcerpt() : void {
 		$GLOBALS['content'] += 1;
 		if (array_key_exists('content',$this->data)) {	//if ($this->data->has('content')) {
 			$GLOBALS['contentCached'] += 1;
-			return $this->data['content'];
 		}
 
-		//return $this->contentParser->toHtml($this->data['content_raw'],$this->data);
 		$this->data['content'] = $this->contentParser->toHtml($this->data['content_raw'],$this->data);
-		return $this->data['content'];
-	}
-
-	public function getExcerpt(int $length = 300) : string {
-		$GLOBALS['excerpt'] += 1;
-		if (array_key_exists('excerpt',$this->data)) {	//if ($this->data->has('excerpt')) {
-			$GLOBALS['excerptCached'] += 1;
-			return $this->data['excerpt'];
-		}
-
-		$content = $this->getContent();
-		if (!$content) {
-			return $content;
-		}
-
-		$excerpt = strip_tags($content);
-
-		if (strlen($excerpt) > $length) {
-			$excerptCut = substr($excerpt, 0, $length);
-			$endPoint   = strrpos($excerptCut, ' ');
-			$excerpt    = $endPoint ? substr($excerptCut, 0, $endPoint) : substr($excerptCut, 0);
-			$excerpt    .= '&hellip;';
-		}
-
-		$this->data['excerpt'] = $excerpt;
-		return $excerpt;
 	}
 }
