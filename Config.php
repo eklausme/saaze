@@ -20,7 +20,7 @@ class Config {
 			'global_path_content'   => SAAZE_PATH . '/' . ($_ENV['CONTENT_PATH']   ?? 'content'),
 			'global_path_public'    => SAAZE_PATH . '/' . ($_ENV['PUBLIC_PATH']    ?? 'public'),
 			'global_path_templates' => SAAZE_PATH . '/' . ($_ENV['TEMPLATES_PATH'] ?? 'templates'),
-			'global_config_entries_per_page' => $_ENV['ENTRIES_PER_PAGE'] ?? 30,	//($entrpp ? $entrpp : 30),
+			'global_config_entries_per_page' => $_ENV['ENTRIES_PER_PAGE'] ?? 20,	//($entrpp ? $entrpp : 20),
 			'global_excerpt_length' => 300,
 		);
 		//printf("Config: H[global_path_public] = %s\n",self::$H['global_path_public']);

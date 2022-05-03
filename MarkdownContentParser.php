@@ -9,6 +9,7 @@
    Elmar Klausmeier, 12-Apr-2022, added gallery()
    Elmar Klausmeier, 15-Apr-2022, debugged gallery()
    Elmar Klausmeier, 18-Apr-2022, integrated excerpt
+   Elmar Klausmeier, 20-Apr-2022, added markmap()
 */
 
 namespace Saaze;
@@ -125,8 +126,11 @@ EOD;
 
 	private int $codepenFlag;	// JavaScript code for Codepen should only be included once
 	private int $numOfGalleries;	// count number of galleries in one blog post
-	private string $css;	// CSS before HTML
-	private string $js;	// JavaScript after HTML
+	private int $numOfMarkmaps;	// count number of markmaps in one blog post
+	private string $cssGallery;	// CSS before HTML for galleries
+	private string $jsGallery;	// JavaScript after HTML for galleries
+	private string $cssMarkmap;	// CSS before HTML for markmaps
+	private string $jsMarkmap;	// JavaScript after HTML for markmaps
 
 	/**
 	 * Work on abc $$uvw$$ xyz.
@@ -289,6 +293,25 @@ EOD;
 	}
 
 
+
+	/**
+	 * Convert [markmap] markmap code [/markdown] tags in your markdown to HTML.
+	 * Example:
+	 *     [markmap]
+	 *	# markmap
+	 *	## autoloader
+	 *	## transformer
+	 *     [/markmap]
+	 */
+	private function markmap(string $content) : string {
+		if (($this->numOfMarkmaps += 1) <= 1) {
+			$this->cssGallery .= "<style> .markmap > svg { width: 100%; height: 300px; } </style>\n";
+			$this->jsGallery .= "<script src=\"https://cdn.jsdelivr.net/npm/markmap-autoloader\"></script>\n";
+		}
+		return $this->myTag($content,"[markmap]","[/markmap]","\n<div class=markmap>\n","\n</div>\n");
+	}
+
+
 	/**
 	 * Convert [gallery] directory regex [/gallery] tags in your markdown to HTML.
 	 * Example:
@@ -312,12 +335,12 @@ EOD;
 			$dir = \Saaze\Config::$H['global_path_public'] . $dirWeb;
 			$regex = substr($mid,$midx+1);
 			if ($i === 0) {
-				$this->css = "\n<style>\n";
-				$this->js = "\n<script>\n";
+				$this->cssGallery = "\n<style>\n";
+				$this->jsGallery = "\n<script>\n";
 			}
 			if (($this->numOfGalleries += 1) <= 1) {
-				$this->css .= self::GALLERY_CSS0;
-				$this->js .= self::GALLERY_JS0;
+				$this->cssGallery .= self::GALLERY_CSS0;
+				$this->jsGallery .= self::GALLERY_JS0;
 			}
 			$cnt = 0;
 			$dirlist = scandir($dir);
@@ -331,12 +354,12 @@ EOD;
 			}
 
 			/* Example: Six columns side by side. CSS is dependant on number of photos. */
-			$this->css .= "\n.gallery_slides{$this->numOfGalleries} { display: none; } /* Hide the images by default */\n"
+			$this->cssGallery .= "\n.gallery_slides{$this->numOfGalleries} { display: none; } /* Hide the images by default */\n"
 				. ".gallery_row{$this->numOfGalleries}:after { content: \"\"; display: table; clear: both; }\n"
 				. sprintf(".gallery_column%d { float:left; width:%f%%; }\n",$this->numOfGalleries,100/$cnt)
 				. ".gallery_demo{$this->numOfGalleries} { opacity: 0.6; } /* Add a transparency effect for thumbnail images */\n"
 				. ".active, .gallery_demo{$this->numOfGalleries}:hover { opacity: 1; }\n";
-			$this->js .= "slideIndex[{$this->numOfGalleries}] = 1;\n"
+			$this->jsGallery .= "slideIndex[{$this->numOfGalleries}] = 1;\n"
 				. "showSlides({$this->numOfGalleries},slideIndex[{$this->numOfGalleries}]);\n";
 
 			$html = "<div class=\"gallery_container\">\n";
@@ -367,8 +390,8 @@ EOD;
 			$last = $start + strlen($html);
 		}
 		if ($i > 0) {
-			$this->css .= "</style>\n\n";
-			$this->js .= "</script>\n\n";
+			$this->cssGallery .= "</style>\n\n";
+			$this->jsGallery .= "</script>\n\n";
 		}
 		return $content;
 	}
@@ -437,33 +460,37 @@ EOD;
 	/**
 	 * Parse raw content and return HTML
 	 */
-	private array $keywords = Array('[youtube]','[vimeo]','[twitter]','[codepen]','[wpvideo','[mermaid]','[gallery]');
+	private array $keywords = Array('MathJax/Dummy','[youtube]','[vimeo]','[twitter]','[codepen]','[wpvideo','[mermaid]','[gallery]','[markmap]');
 
 	// pass by reference for frontmatter important for excerpt
 	public function toHtml(string $content, array &$frontmatter=null) : string {
 		$t0 = microtime(true);
 		$this->codepenFlag = 0;	// reset for every new blog page
 		$this->numOfGalleries = 0;	// reset for every new blog page
-		$this->css = "";
-		$this->js = "";
+		$this->numOfMarkmaps = 0;
+		$this->cssGallery = "";
+		$this->jsGallery = "";
+		$this->cssMarkmap = "";
+		$this->jsMarkmap = "";
 		$content = $this->moreTag($content);	// more-tag can occur anywhere
 
 		// Performance optimization only, no functional benefit.
 		// Only marginally relevant if you have more than a few hundred posts.
 		$hasKeyword = 0;	// used as bitset
-		for ($i=0; $i<7; ++$i) {
+		for ($i=1; $i<=8; ++$i) {
 			if (strpos($content,$this->keywords[$i]) === false) continue;
 			$hasKeyword |= 1 << $i;
 		}
-		$hasYoutube = $hasKeyword & 1;
-		$hasVimeo =$hasKeyword & 2;
-		$hasTwitter = $hasKeyword & 4;
-		$hasCodepen = $hasKeyword & 8;
-		$hasWpvideo = $hasKeyword & 16;
-		$hasMermaid = $hasKeyword & 32;
-		$hasGallery = $hasKeyword & 64;
 		$hasMath = isset($frontmatter['MathJax']);
-		if ($hasMath) $hasKeyword |= 128;
+		if ($hasMath) $hasKeyword |= 1;
+		$hasYoutube = $hasKeyword & 2;
+		$hasVimeo =$hasKeyword & 4;
+		$hasTwitter = $hasKeyword & 8;
+		$hasCodepen = $hasKeyword & 16;
+		$hasWpvideo = $hasKeyword & 32;
+		$hasMermaid = $hasKeyword & 64;
+		$hasGallery = $hasKeyword & 128;
+		$hasMarkmap = $hasKeyword & 256;
 
 		if ($hasKeyword) {
 			$arr = explode("`",$content);	// known deficiency: does not cope for HTML comments
@@ -503,6 +530,7 @@ EOD;
 				if ($hasWpvideo) $arr[$i] = $this->wpvideo($arr[$i]);
 				if ($hasMermaid) $arr[$i] = $this->mermaid($arr[$i]);
 				if ($hasGallery) $arr[$i] = $this->gallery($arr[$i]);
+				if ($hasMarkmap) $arr[$i] = $this->markmap($arr[$i]);
 			}
 			$modContent = implode("`",$arr);
 		} else {
@@ -515,7 +543,7 @@ EOD;
 		//$html = parent::toHtml($modConent);	// markdown to HTML
 		$html = \FFI::string( $GLOBALS['ffi']->md4c_toHtml($modContent) );
 		if (isset($frontmatter)) $frontmatter['excerpt'] = $this->getExcerpt($html);
-		$html = $this->css . $html . $this->js;
+		$html = $this->cssGallery . $this->cssMarkmap . $html . $this->jsGallery . $this->jsMarkmap;
 		$GLOBALS['md2html'] += microtime(true) - $t1;
 
 		return $this->amplink($html);	// fix Markdown ampersand handling

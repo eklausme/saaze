@@ -27,13 +27,6 @@ class EntryManager {
 		if (empty($this->entries)) return null;
 
 		$this->sortEntries();	// sort entriesSansIndex
-
-		//$this->entriesSansIndex = [];
-		//foreach ($this->entries as $entry) {	// copy entries except those with 'index.md'
-		//	if (substr($entry->filePath,-9) !== '/index.md')
-		//		$this->entriesSansIndex[] = $entry;
-		//}
-
 		return $this->entries;
 	}
 
