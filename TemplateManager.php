@@ -30,8 +30,8 @@ class TemplateManager {
 		//$entries    = $this->entryManager->entries;	//$this->entryManager->getEntriesForTemplate();
 		$entries    = $this->entryManager->entriesSansIndex;
 		$page       = (int) filter_var($page, FILTER_SANITIZE_NUMBER_INT);	// end-user might fiddle with page in class Router
-		$perPage    = \Saaze\Config::$H['global_config_entries_per_page'];
-		$pagination = $this->entryManager->paginateEntriesForTemplate($entries, $page, $perPage);
+		$entries_per_page = $collection->data['entries_per_page'] ?? \Saaze\Config::$H['global_config_entries_per_page'];
+		$pagination = $this->entryManager->paginateEntriesForTemplate($entries, $page, $entries_per_page);
 		$pagination['entries'] = array_map(function ($entry) { return $entry->data; }, $pagination['entries']);	// flatten entry
 
 		$url = $collection->data['index_route'];

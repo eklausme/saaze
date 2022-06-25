@@ -47,8 +47,9 @@ class BuildCommand {
 
 			$entries    = $this->entryManager->getEntries();
 			$nentries   = count($this->entryManager->entriesSansIndex);
-			$totalPages = ceil($nentries / \Saaze\Config::$H['global_config_entries_per_page']);
-			printf("\texecute(): filePath=%s, nentries=%d, totalPages=%d, entries_per_page=%d\n",$collection->filePath,$nentries,$totalPages,\Saaze\Config::$H['global_config_entries_per_page']);
+			$entries_per_page = $collection->data['entries_per_page'] ?? \Saaze\Config::$H['global_config_entries_per_page'];
+			$totalPages = ceil($nentries / $entries_per_page);
+			printf("\texecute(): filePath=%s, nentries=%d, totalPages=%d, entries_per_page=%d\n",$collection->filePath,$nentries,$totalPages,$entries_per_page);
 
 			if ($this->buildCollectionIndex($collection, 0, $dest)) {
 				$collectionCount++;
@@ -193,23 +194,28 @@ class BuildCommand {
 			return false;
 		}
 
+		$indexSpecial = 0;
 		$entryDir = "{$dest}/" . ltrim($collection->data['entry_route'], '/');
 		$entryDir = str_replace('{slug}', $entry->slug(), $entryDir);
 
-		// does not work for 2019/08-02-oracle-deadlock-when-using-bitmap-index.md
-		//if (substr_compare($entry->slug(), 'index', -strlen('index')) === 0) {
-		//    $entryDir = preg_replace('/index$/', '', $entryDir);
-		//}
 		if (substr($entry->filePath,-9) === '/index.md') {	// 9=strlen('/index.md')
 			$entryDir = substr($entryDir,0,strlen($entryDir)-5);	// drop 'index' string, 5=strlen('index')
+			$indexSpecial = 1;
 		}
 
 		$entryDir = rtrim($entryDir, '/');
 
-		if (!is_dir($entryDir)) {
-			mkdir($entryDir, 0777, true);
+		if (!$indexSpecial && isset($collection->data['uglyURL'])) {
+			$lastSlash = strrpos($entryDir,'/');
+			if ($lastSlash !== false) {
+				$lastDir = substr($entryDir,0,$lastSlash);
+				if (!is_dir($lastDir)) mkdir($lastDir, 0777, true);
+			}
+			$entryDir .= '.html';	// ugly entries are {slug}.html
+		} else {	// non-ugly entries are in {slug}/index.html
+			if (!is_dir($entryDir)) mkdir($entryDir, 0777, true);
+			$entryDir .= '/index.html';
 		}
-		$entryDir .= "/index.html";
 		$GLOBALS['fileToRender'] = $entryDir;
 		$GLOBALS['rbase'] = $this->compRbase($entryDir,$this->buildDest);
 		file_put_contents($entryDir, $this->templateManager->renderEntry($entry));
