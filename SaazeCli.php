@@ -40,7 +40,7 @@ class SaazeCli {
 			"---------------\n";
 	}
 
-	public function run() :void {
+	public function run() : void {
 		//$this->startXhprof();
 		$dest = 'build';
 		$singleFile = null;

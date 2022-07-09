@@ -12,10 +12,8 @@ class Collection {
 
 	public function __construct(string $filePath) {	//, CollectionParserInterface $collectionParser)
 		$this->filePath = $filePath;
-		$this->slug = basename($this->filePath, '.yml');
-
-		//$this->data = new Dot($collectionParser->parseCollection($this->filePath));
-		$this->data = $this->parseCollection($this->filePath);	//new Dot( $this->parseCollection($this->filePath) );
+		$this->slug = basename($this->filePath, '.yml');	// used to find corresponding template
+		$this->data = $this->parseCollection($this->filePath);
 	}
 
 	public function parseCollection(string $filePath) : array {

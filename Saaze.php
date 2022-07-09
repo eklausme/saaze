@@ -20,9 +20,13 @@ class Saaze {
 	public CollectionManager $collectionManager;
 	public EntryManager $entryManager;
 	public TemplateManager $templateManager;
+	public readonly bool $dbgPrt;
+	public readonly string $dbgFile;
 
 	public function __construct(string $saazePath) {
 		define('SAAZE_PATH', $saazePath);
+		$this->dbgPrt = false;
+		$this->dbgFile = '/tmp/saaze.log';
 		Config::init();
 	}
 
@@ -30,7 +34,6 @@ class Saaze {
 		$this->collectionManager = new \Saaze\CollectionManager();
 		$this->entryManager = new \Saaze\EntryManager();
 		$this->templateManager = new \Saaze\TemplateManager($this->entryManager);
-		//$router = new \Saaze\Router($collectionManager,$entryManager,$templateManager);
 		return $this->handle();
 	}
 
@@ -45,42 +48,56 @@ class Saaze {
 
 		// Below code required so that rbase works correctly in dynamic mode
 		// Emulate what Hiawatha web-server does on its own
-		if (substr($_SERVER["REQUEST_URI"],-1) !== '/')
+		if (substr($_SERVER["REQUEST_URI"],-1) !== '/') {
 			header('Location: ' . $_SERVER['REQUEST_URI'] . '/'); // Redirect browser to same URL with slash added at end
+			if ($this->dbgPrt) file_put_contents($this->dbgFile,"\nRedireccting: REQUEST_URI=|{$_SERVER['REQUEST_URI']}|, QUERY_STRING=|".($_SERVER['QUERY_STRING']??"(null)")."|\n",FILE_APPEND);
+			return true;
+		}
 
 		// REQUEST_URI is the original URL typed by the end-user.
 		// QUERY_STRING can be either empty, or is the string resulting from any rewriting-rules within the web-server.
 		// QUERY_STRING usually lacks the leading '/', therefore added below.
-		//file_put_contents('/tmp/s9',"\nREQUEST_URI=|{$_SERVER['REQUEST_URI']}|, QUERY_STRING=|{$_SERVER['QUERY_STRING']}|\n",FILE_APPEND);
+		if ($this->dbgPrt) file_put_contents($this->dbgFile,"\nREQUEST_URI=|{$_SERVER['REQUEST_URI']}|, QUERY_STRING=|".($_SERVER['QUERY_STRING']??"(null)")."|\n",FILE_APPEND);
 		//$request_uri = rtrim($_SERVER['REQUEST_URI'],'/');
 		$query_string = isset($_SERVER['QUERY_STRING']) ? '/' . ltrim($_SERVER['QUERY_STRING'],'/') : null;
 		$request_uri = rtrim($query_string ?? $_SERVER['REQUEST_URI'],'/');
-		//file_put_contents('/tmp/s9',"request_uri=|{$request_uri}|\n",FILE_APPEND);
+		//$request_uri = '/' . ltrim($request_uri,'/');	// required for php -S 0:8000 case
+		if ($this->dbgPrt) file_put_contents($this->dbgFile,"request_uri=|{$request_uri}|\n",FILE_APPEND);
 		foreach ($this->collectionManager->getCollections() as $collection) {
 			if (!isset($collection->data['entry_route'])) continue;
 			if (($slugStart = strpos($collection->data['entry_route'],"/{slug}")) === false) continue;	// no correct entry_route in collection yaml-file
 			$entryStart = substr($collection->data['entry_route'],0,$slugStart);
 			$entryStartLen = strlen($entryStart);
-			//file_put_contents('/tmp/s9',"collection->slug=|{$collection->slug}|, ->data[entry_route]=|{$collection->data['entry_route']}|, entryStart=|{$entryStart}|\n",FILE_APPEND);
+			if ($this->dbgPrt) file_put_contents($this->dbgFile,"collection->slug=|{$collection->slug}|, ->data[entry_route]=|{$collection->data['entry_route']}|, entryStart=|{$entryStart}|\n",FILE_APPEND);
 			$page = null;
 			if (str_starts_with($request_uri,$entryStart)) {
+				// Here we would have to add the uglyURL case, if needed
 				$singleFile = \Saaze\Config::$H['global_path_content'] . '/' . $collection->slug . substr($request_uri,strlen($entryStart)) . '.md';
-				//file_put_contents('/tmp/s9',"collection->slug=|{$collection->slug}|, singleFile1=|{$singleFile}|\n",FILE_APPEND);
+				if ($this->dbgPrt) file_put_contents($this->dbgFile,"collection->slug=|{$collection->slug}|, singleFile1=|{$singleFile}|\n",FILE_APPEND);
 				$entry = new Entry($singleFile);
-				if (isset($entry->data)) goto A;
+				if (isset($entry->data)) goto entryCase;
+				// Special case for index.md
 				$singleFile = \Saaze\Config::$H['global_path_content'] . '/' . $collection->slug . substr($request_uri,strlen($entryStart)) . '/index.md';
-				//file_put_contents('/tmp/s9',"collection->slug=|{$collection->slug}|, singleFile2=|{$singleFile}|\n",FILE_APPEND);
+				if ($this->dbgPrt) file_put_contents($this->dbgFile,"collection->slug=|{$collection->slug}|, singleFile2=|{$singleFile}|\n",FILE_APPEND);
 				$entry = new Entry($singleFile);
-				if (!isset($entry->data)) goto B;
-				A: $entry->setCollection($collection);
+				if (!isset($entry->data)) goto indexCase;
+				entryCase: // process entry case
+				if ($this->dbgPrt) file_put_contents($this->dbgFile,"collection->slug=|{$collection->slug}|, 200\n",FILE_APPEND);
+				$entry->setCollection($collection);
 				$entry->getContentAndExcerpt();	//$entry->getContent();
 				$entry->getUrl();
 				echo $this->templateManager->renderEntry($entry);
 				return true;
 			}
-			B: if ($request_uri === $entryStart
-			|| (str_starts_with($request_uri,$entryStart.'/page/') && ctype_digit($page=substr($request_uri,$entryStartLen+6)))) {
-				//file_put_contents('/tmp/s9',"collection->slug=|{$collection->slug}|, match: entryStart=|${entryStart}|\n",FILE_APPEND);
+			indexCase:	// process index case
+			$indexStart = $collection->data['index_route'];
+			if (!isset($indexStart)) continue;	// no index_route means no index
+			$indexStart = rtrim($indexStart,'/');
+			$indexStartLen = strlen($indexStart);
+			if ($this->dbgPrt) file_put_contents($this->dbgFile,"indexStart=|{$indexStart}|, indexStartLen={$indexStartLen},\n",FILE_APPEND);
+			if ($request_uri === $indexStart
+			|| (str_starts_with($request_uri,$indexStart.'/page/') && ctype_digit($page=substr($request_uri,$indexStartLen+6)))) {	// 6=strlen('/page/')
+				if ($this->dbgPrt) file_put_contents($this->dbgFile,"collection->slug=|{$collection->slug}|, match=200: indexStart=|${indexStart}|\n",FILE_APPEND);
 				$this->entryManager->setCollection($collection);
 				//$this->entryManager->entries = [];	// clear all read entries in EntryManager
 				$this->entryManager->getEntries();
@@ -89,6 +106,7 @@ class Saaze {
 			}
 		}
 		http_response_code(404); 
+		if ($this->dbgPrt) file_put_contents($this->dbgFile,"Not found: 404\n",FILE_APPEND);
 		echo $this->templateManager->renderError('Not found', 404);
 		return true;
 	}

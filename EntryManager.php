@@ -77,7 +77,7 @@ class EntryManager {
 
 	protected function loadEntry(string $filePath) : Entry|null {
 		$entry = new Entry($filePath);	//container()->make(EntryInterface::class, ['filePath' => $filePath]);
-		if (!isset($entry->data)) return null;	// only for class Router (=now Saaze.php)
+		if (!isset($entry->data)) return null;	// relevant for Saaze.php
 		if ($this->draft == false && array_key_exists('draft',$entry->data)
 		&& $entry->data['draft']) return null;
 		$entry->setCollection($this->collection);

@@ -162,7 +162,7 @@ class BuildCommand {
 	}
 
 	private function buildCollectionIndex(Collection $collection, int $page, string $dest) : bool {
-		if (!$collection->data['index_route']) {
+		if (!$collection->data['index_route']) {	// no index_route means no index
 			return false;
 		}
 

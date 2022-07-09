@@ -25,36 +25,17 @@ class CollectionManager {
 		});
 	}
 
-	public function getCollection(string $slug) : Collection|null {
-		$this->getCollections();
-
-		if (empty($this->collections[$slug])) {
-			return null;
-		}
-
-		return $this->collections[$slug];
-	}
-
 	protected function loadCollections() : array {	// search Yaml files in content directory
-		foreach(scandir(\Saaze\Config::$H['global_path_content']) as $fn) {
-			if (!is_dir($fn) && substr($fn,-4) === '.yml') {
-				$this->loadCollection(\Saaze\Config::$H['global_path_content'] . DIRECTORY_SEPARATOR . $fn);
+		$dir = \Saaze\Config::$H['global_path_content'];
+		foreach(scandir($dir) as $fn) {
+			$fn = $dir . DIRECTORY_SEPARATOR . $fn;
+			if (!is_dir($fn) && substr($fn,-4) === '.yml' && is_readable($fn)) {
+				$collection = new Collection($fn);
+				$this->collections[$collection->slug] = $collection;
 			}
 		}
 
 		return $this->collections;
-	}
-
-	protected function loadCollection(string $filePath) : Collection|null {
-		if (!is_readable($filePath)) {	//file_exists()
-			return null;
-		}
-
-		$collection = new Collection($filePath);	//container()->make(CollectionInterface::class, ['filePath' => $filePath]);
-
-		$this->collections[$collection->slug] = $collection;
-
-		return $collection;
 	}
 
 }
