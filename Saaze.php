@@ -90,9 +90,8 @@ class Saaze {
 				return true;
 			}
 			indexCase:	// process index case
-			$indexStart = $collection->data['index_route'];
-			if (!isset($indexStart)) continue;	// no index_route means no index
-			$indexStart = rtrim($indexStart,'/');
+			if (!array_key_exists('index_route',$collection->data)) continue;	// no index_route means no index
+			$indexStart = rtrim($collection->data['index_route'],'/');
 			$indexStartLen = strlen($indexStart);
 			if ($this->dbgPrt) file_put_contents($this->dbgFile,"indexStart=|{$indexStart}|, indexStartLen={$indexStartLen},\n",FILE_APPEND);
 			if ($request_uri === $indexStart

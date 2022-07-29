@@ -105,6 +105,6 @@ class Entry {
 			$GLOBALS['contentCached'] += 1;
 		}
 
-		$this->data['content'] = $this->contentParser->toHtml($this->data['content_raw'],$this->data);
+		$this->data['content'] = $this->contentParser->toHtml($this->data['content_raw'],$this);	//$this->data,$this->collection);
 	}
 }

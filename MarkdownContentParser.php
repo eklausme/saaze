@@ -444,10 +444,11 @@ EOD;
 	}
 
 
-	private function getExcerpt(string $html) {
+	private function getExcerpt(string $html, Entry &$entry=null) {
 		$excerpt = strip_tags($html);
+		$length = $entry->collection->data['excerpt_length'] ?? \Saaze\Config::$H['global_excerpt_length'];
 
-		if (strlen($excerpt) > ($length = \Saaze\Config::$H['global_excerpt_length'])) {
+		if (strlen($excerpt) > $length) {
 			$excerptCut = substr($excerpt, 0, $length);
 			$endPoint   = strrpos($excerptCut, ' ');
 			$excerpt    = $endPoint ? substr($excerptCut, 0, $endPoint) : substr($excerptCut, 0);
@@ -462,8 +463,8 @@ EOD;
 	 */
 	private array $keywords = Array('MathJax/Dummy','[youtube]','[vimeo]','[twitter]','[codepen]','[wpvideo','[mermaid]','[gallery]','[markmap]');
 
-	// pass by reference for frontmatter important for excerpt
-	public function toHtml(string $content, array &$frontmatter=null) : string {
+	// pass by reference for entry
+	public function toHtml(string $content, Entry &$entry=null) : string {
 		$t0 = microtime(true);
 		$this->codepenFlag = 0;	// reset for every new blog page
 		$this->numOfGalleries = 0;	// reset for every new blog page
@@ -481,7 +482,7 @@ EOD;
 			if (strpos($content,$this->keywords[$i]) === false) continue;
 			$hasKeyword |= 1 << $i;
 		}
-		$hasMath = isset($frontmatter['MathJax']);
+		$hasMath = $entry->data['MathJax'] ?? false;	//isset($frontmatter['MathJax']);
 		if ($hasMath) $hasKeyword |= 1;
 		$hasYoutube = $hasKeyword & 2;
 		$hasVimeo =$hasKeyword & 4;
@@ -542,7 +543,7 @@ EOD;
 		$GLOBALS['MathParserNcall'] += 1;
 		//$html = parent::toHtml($modConent);	// markdown to HTML
 		$html = \FFI::string( $GLOBALS['ffi']->md4c_toHtml($modContent) );
-		if (isset($frontmatter)) $frontmatter['excerpt'] = $this->getExcerpt($html);
+		if ($entry->data) $entry->data['excerpt'] = $this->getExcerpt($html,$entry);
 		$html = $this->cssGallery . $this->cssMarkmap . $html . $this->jsGallery . $this->jsMarkmap;
 		$GLOBALS['md2html'] += microtime(true) - $t1;
 
