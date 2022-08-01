@@ -129,8 +129,8 @@ EOD;
 	private int $numOfMarkmaps;	// count number of markmaps in one blog post
 	private string $cssGallery;	// CSS before HTML for galleries
 	private string $jsGallery;	// JavaScript after HTML for galleries
-	private string $cssMarkmap;	// CSS before HTML for markmaps
-	private string $jsMarkmap;	// JavaScript after HTML for markmaps
+	private string $cssMarkmap;	// CSS before HTML for markmaps: not used, is in cssGallery instead
+	private string $jsMarkmap;	// JavaScript after HTML for markmaps: not used, is in jsGallery instead
 
 	/**
 	 * Work on abc $$uvw$$ xyz.
@@ -542,9 +542,10 @@ EOD;
 		$GLOBALS['MathParser'] += $t1 - $t0;
 		$GLOBALS['MathParserNcall'] += 1;
 		//$html = parent::toHtml($modConent);	// markdown to HTML
-		$html = \FFI::string( $GLOBALS['ffi']->md4c_toHtml($modContent) );
+		//$html = \FFI::string( $GLOBALS['ffi']->md4c_toHtml($modContent) );
+		$html = \FFI::string( \Saaze\Config::$H['global_ffi']->md4c_toHtml($modContent) );
 		if ($entry->data) $entry->data['excerpt'] = $this->getExcerpt($html,$entry);
-		$html = $this->cssGallery . $this->cssMarkmap . $html . $this->jsGallery . $this->jsMarkmap;
+		$html = $this->cssGallery . $html . $this->jsGallery;
 		$GLOBALS['md2html'] += microtime(true) - $t1;
 
 		return $this->amplink($html);	// fix Markdown ampersand handling

@@ -2,8 +2,6 @@
 
 namespace Saaze;
 
-//use Jenssegers\Blade\Blade;
-
 
 class TemplateManager {
 	protected EntryManager $entryManager;
@@ -14,7 +12,6 @@ class TemplateManager {
 	}
 
 	public function templateExists(string $template) : bool {
-		//return file_exists(\Saaze\Config::$H['global_path_templates'] . "/{$template}.blade.php");
 		return file_exists(\Saaze\Config::$H['global_path_templates'] . "/{$template}.php");
 	}
 

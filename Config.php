@@ -1,10 +1,9 @@
 <?php declare(strict_types=1);
-// Global config variables for Simplified Saaze
 
 namespace Saaze;
 
 
-class Config {
+class Config {	// Global config variables for Simplified Saaze
 	static public array $H;	// hash for global config data
 
 	static public function init() : void {
@@ -12,16 +11,15 @@ class Config {
 			throw new \Exception('SAAZE_PATH is not defined');
 		}
 
-		//$entrpp = getenv('ENTRIES_PER_PAGE');
 		self::$H = array(
 			'global_rbase'			=> "",
 			'global_path_base'      => SAAZE_PATH,
-			'global_path_cache'     => SAAZE_PATH . '/' . ($_ENV['CACHE_PATH']     ?? 'cache'),
 			'global_path_content'   => SAAZE_PATH . '/' . ($_ENV['CONTENT_PATH']   ?? 'content'),
 			'global_path_public'    => SAAZE_PATH . '/' . ($_ENV['PUBLIC_PATH']    ?? 'public'),
 			'global_path_templates' => SAAZE_PATH . '/' . ($_ENV['TEMPLATES_PATH'] ?? 'templates'),
-			'global_config_entries_per_page' => $_ENV['ENTRIES_PER_PAGE'] ?? 20,	//($entrpp ? $entrpp : 20),
+			'global_config_entries_per_page' => $_ENV['ENTRIES_PER_PAGE'] ?? 20,
 			'global_excerpt_length' => 300,
+			'global_ffi' => \FFI::cdef("char *md4c_toHtml(const char*);","/srv/http/php_md4c_toHtml.so"),	// md4c called via PHP-FFI
 		);
 		//printf("Config: H[global_path_public] = %s\n",self::$H['global_path_public']);
 
@@ -38,10 +36,6 @@ class Config {
 		$GLOBALS['MathParserNcall'] = 0;	// number of calls
 		$GLOBALS['md2html'] = 0;	// time spent in Markdown to HTML conversion
 
-		// md4c called via PHP-FFI
-		$GLOBALS['ffi'] = \FFI::cdef("char *md4c_toHtml(const char*);","/srv/http/php_md4c_toHtml.so");
-
-		$GLOBALS['rbase'] = "";
+		$GLOBALS['rbase'] = "";	// relative base
 	}
-
 }

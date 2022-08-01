@@ -4,7 +4,7 @@ namespace Saaze;
 
 
 class EntryManager {
-	public bool $draft;
+	public bool $draftOverride;
 	protected Collection $collection;	// the EntryManager is for this collection only
 
 	public array $entries = [];	// all entries for this collection
@@ -12,7 +12,7 @@ class EntryManager {
 	public array $entriesSansIndex = [];	// all entries for this collection WITHOUT index.md, if any
 
 	public function __construct(bool $draft = true) {
-		$this->draft = $draft;
+		$this->draftOverride = $draft;
 	}
 
 	public function setCollection(Collection $collection) : void {
@@ -76,16 +76,14 @@ class EntryManager {
 	}
 
 	protected function loadEntry(string $filePath) : Entry|null {
-		$entry = new Entry($filePath);	//container()->make(EntryInterface::class, ['filePath' => $filePath]);
+		$entry = new Entry($filePath);
 		if (!isset($entry->data)) return null;	// relevant for Saaze.php
-		if ($this->draft == false && array_key_exists('draft',$entry->data)
+		if ($this->draftOverride == false  &&  array_key_exists('draft',$entry->data)
 		&& $entry->data['draft']) return null;
 		$entry->setCollection($this->collection);
 
 		$this->entries[$entry->slug()] = $entry;
 
-		// Attempt to reduce massive number of calls to content()
-		//$entry->getContent();	# initializes data[]
 		$entry->getContentAndExcerpt();
 		$entry->getUrl();	# must be computed after getContent()
 		//$entry->getExcerpt();

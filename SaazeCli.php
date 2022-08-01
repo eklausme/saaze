@@ -42,16 +42,16 @@ class SaazeCli {
 
 	public function run() : void {
 		//$this->startXhprof();
-		$dest = 'build';
+		$buildDest = 'build';
 		$singleFile = null;
 		$extractFile = 0;
 		$draft = false;	// =false: do not show drafts, =true: show drafts
 
-		$options = getopt("d:efs:");
+		$options = getopt("b:efs:");
 		//var_dump($options);
 		if (count($options) > 0) {
-			if (isset($options['d']) && strlen($options['d']) > 0 && $options['d'] !== "/") {
-				$dest = $options['d'];
+			if (isset($options['b']) && strlen($options['b']) > 0 && $options['b'] !== "/") {
+				$buildDest = $options['b'];
 			}
 			if (isset($options['e'])) $extractFile = 1;
 			if (isset($options['f'])) $draft = true;
@@ -65,7 +65,7 @@ class SaazeCli {
 		$templateManager = new \Saaze\TemplateManager($entryManager);
 		$buildMgr = new \Saaze\BuildCommand($collectionManager,$entryManager,$templateManager);
 
-		if (is_null($singleFile)) $buildMgr->buildAllStatic($dest);
+		if (is_null($singleFile)) $buildMgr->buildAllStatic($buildDest);
 		else $buildMgr->buildSingleStatic($dest,$singleFile,$extractFile);
 
 		//$this->stopXhprof();

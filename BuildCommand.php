@@ -23,7 +23,7 @@ class BuildCommand {
 		$this->templateManager   = $templateManager;
 	}
 
-	public function buildAllStatic(string $dest) : void {	//execute(InputInterface $input, OutputInterface $output)
+	public function buildAllStatic(string $dest) : void {
 		$t0 = microtime(true);
 
 		if (strpos($dest, '/') !== 0) {	// Does not start with '/'?

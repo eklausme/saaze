@@ -3,7 +3,7 @@
 namespace Saaze;
 
 
-class Entry {
+class Entry {	// here we store frontmatter, Markdown, and generated HTML
 	public Collection|null $collection = null;	// "father" collection for this entry
 
 	public string $filePath;
@@ -12,12 +12,9 @@ class Entry {
 
 	protected MarkdownContentParser $contentParser;
 
-	public function __construct(string $filePath) {	//, ContentParserInterface $contentParser), EntryParserInterface $entryParser)
+	public function __construct(string $filePath) {
 		$this->filePath      = $filePath;
-		//$this->slug = $this->computeSlug();
-		$this->contentParser = new MarkdownContentParser; //$contentParser;
-
-		//$this->data = new Dot($entryParser->parseEntry($this->filePath));
+		$this->contentParser = new MarkdownContentParser;
 		$this->data = $this->parseEntry($this->filePath);
 	}
 
@@ -58,10 +55,6 @@ class Entry {
 		//$matter = Yaml::parse($matter);	// slow and additional dependency
 		$matter = yaml_parse($matter);	// cuts almost 40% of the runtime, so highly recommended
 
-		// $object = EntryParser::parse(file_get_contents($filePath));
-		//$data = $object->matter();
-		//$data['content_raw'] = $object->body();
-
 		$data = $matter;
 		$data['content_raw'] = $body;
 
@@ -87,9 +80,7 @@ class Entry {
 	}
 
 	public function getUrl() : string {
-		if (array_key_exists('url',$this->data)) {	//if ($this->data->has('url')) {
-			return $this->data['url'];
-		}
+		if (array_key_exists('url',$this->data)) return $this->data['url'];
 
 		$slugStr = $this->slug();
 		if (substr($slugStr,-6) === '/index') $slugStr = substr($slugStr,0,-6);	// strip '/index'
@@ -101,10 +92,7 @@ class Entry {
 
 	public function getContentAndExcerpt() : void {
 		$GLOBALS['content'] += 1;
-		if (array_key_exists('content',$this->data)) {	//if ($this->data->has('content')) {
-			$GLOBALS['contentCached'] += 1;
-		}
-
-		$this->data['content'] = $this->contentParser->toHtml($this->data['content_raw'],$this);	//$this->data,$this->collection);
+		if (array_key_exists('content',$this->data)) $GLOBALS['contentCached'] += 1;
+		$this->data['content'] = $this->contentParser->toHtml($this->data['content_raw'],$this);
 	}
 }

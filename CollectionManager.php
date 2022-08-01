@@ -7,15 +7,9 @@ class CollectionManager {
 	protected array $collections = [];
 
 	public function getCollections() : array {
-		if (empty($this->collections)) {
-			$this->loadCollections();
-		}
-		if (empty($this->collections)) {
-			return $this->collections;
-		}
-
+		if (empty($this->collections)) $this->loadCollections();
+		if (empty($this->collections)) return $this->collections;
 		$this->sortCollections();
-
 		return $this->collections;
 	}
 
