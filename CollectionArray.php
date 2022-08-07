@@ -3,8 +3,13 @@
 namespace Saaze;
 
 
-class CollectionManager {
+class CollectionArray {
 	protected array $collections = [];
+	public bool $draftOverride;
+
+	public function __construct(bool $draft = true) {
+		$this->draftOverride = $draft;
+	}
 
 	public function getCollections() : array {
 		if (empty($this->collections)) $this->loadCollections();
@@ -24,7 +29,7 @@ class CollectionManager {
 		foreach(scandir($dir) as $fn) {
 			$fn = $dir . DIRECTORY_SEPARATOR . $fn;
 			if (!is_dir($fn) && substr($fn,-4) === '.yml' && is_readable($fn)) {
-				$collection = new Collection($fn);
+				$collection = new Collection($fn,$this->draftOverride);
 				$this->collections[$collection->slug] = $collection;
 			}
 		}

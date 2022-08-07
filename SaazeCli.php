@@ -60,10 +60,9 @@ class SaazeCli {
 			}
 		}
 
-		$collectionManager = new \Saaze\CollectionManager();
-		$entryManager = new \Saaze\EntryManager($draft);
-		$templateManager = new \Saaze\TemplateManager($entryManager);
-		$buildMgr = new \Saaze\BuildCommand($collectionManager,$entryManager,$templateManager);
+		$collectionArray = new CollectionArray($draft);
+		$templateManager = new TemplateManager();
+		$buildMgr = new BuildCommand($collectionArray,$templateManager);
 
 		if (is_null($singleFile)) $buildMgr->buildAllStatic($buildDest);
 		else $buildMgr->buildSingleStatic($dest,$singleFile,$extractFile);

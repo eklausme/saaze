@@ -5,12 +5,10 @@ namespace Saaze;
 
 class Entry {	// here we store frontmatter, Markdown, and generated HTML
 	public Collection|null $collection = null;	// "father" collection for this entry
-
 	public string $filePath;
-
 	public array|null $data;	// hash containing frontmatter Yaml parsed, Markdown content in 'content_raw'
-
 	protected MarkdownContentParser $contentParser;
+
 
 	public function __construct(string $filePath) {
 		$this->filePath      = $filePath;

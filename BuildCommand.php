@@ -5,30 +5,21 @@ namespace Saaze;
 
 class BuildCommand {
 	protected static string $defaultName = 'build';
-
 	protected string $buildDest;	// needed for rbase computation
-
-	protected CollectionManager $collectionManager;
-
-	protected EntryManager $entryManager;
-
+	protected CollectionArray $collectionArray;
 	protected TemplateManager $templateManager;
 
 
-	public function __construct(CollectionManager $collectionManager, EntryManager $entryManager, TemplateManager $templateManager) {
-		//parent::__construct();
-
-		$this->collectionManager = $collectionManager;
-		$this->entryManager      = $entryManager;
-		$this->templateManager   = $templateManager;
+	public function __construct(CollectionArray $collectionArray, TemplateManager $templateManager) {
+		$this->collectionArray = $collectionArray;
+		$this->templateManager = $templateManager;
 	}
 
 	public function buildAllStatic(string $dest) : void {
 		$t0 = microtime(true);
 
-		if (strpos($dest, '/') !== 0) {	// Does not start with '/'?
+		if (strpos($dest, '/') !== 0)	// Does not start with '/'?
 			$dest = \Saaze\Config::$H['global_path_base'] . "/{$dest}";
-		}
 
 		$this->buildDest = $dest;	// root directory for building
 
@@ -36,28 +27,22 @@ class BuildCommand {
 
 		$this->clearBuildDirectory($dest);
 
-		$collections     = $this->collectionManager->getCollections();
+		$collections     = $this->collectionArray->getCollections();
 		$ncollections    = count($collections);	// for debugging
 		$collectionCount = 0;
 		$entryCount      = 0;
 
 		foreach ($collections as $collection) {
-			$this->entryManager->setCollection($collection);
-			//$this->entryManager->entries = [];	// clear all read entries in EntryManager
-
-			$entries    = $this->entryManager->getEntries();
-			$nentries   = count($this->entryManager->entriesSansIndex);
+			$entries    = $collection->getEntries();
+			$nentries   = count($collection->entriesSansIndex);
 			$entries_per_page = $collection->data['entries_per_page'] ?? \Saaze\Config::$H['global_config_entries_per_page'];
 			$totalPages = ceil($nentries / $entries_per_page);
 			printf("\texecute(): filePath=%s, nentries=%d, totalPages=%d, entries_per_page=%d\n",$collection->filePath,$nentries,$totalPages,$entries_per_page);
 
-			if ($this->buildCollectionIndex($collection, 0, $dest)) {
-				$collectionCount++;
-			}
+			if ($this->buildCollectionIndex($collection, 0, $dest)) $collectionCount++;
 
-			for ($page=1; $page <= $totalPages; $page++) {
+			for ($page=1; $page <= $totalPages; $page++)
 				$this->buildCollectionIndex($collection, $page, $dest);
-			}
 
 			foreach ($entries as $entry) {
 				$entry->setCollection($collection);

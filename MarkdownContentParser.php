@@ -305,8 +305,8 @@ EOD;
 	 */
 	private function markmap(string $content) : string {
 		if (($this->numOfMarkmaps += 1) <= 1) {
-			$this->cssGallery .= "<style> .markmap > svg { width: 100%; height: 300px; } </style>\n";
-			$this->jsGallery .= "<script src=\"https://cdn.jsdelivr.net/npm/markmap-autoloader\"></script>\n";
+			$this->cssMarkmap .= "<style> .markmap > svg { width: 100%; height: 300px; } </style>\n";
+			$this->jsMarkmap .= "<script src=\"https://cdn.jsdelivr.net/npm/markmap-autoloader\"></script>\n";
 		}
 		return $this->myTag($content,"[markmap]","[/markmap]","\n<div class=markmap>\n","\n</div>\n");
 	}
@@ -464,7 +464,7 @@ EOD;
 	private array $keywords = Array('MathJax/Dummy','[youtube]','[vimeo]','[twitter]','[codepen]','[wpvideo','[mermaid]','[gallery]','[markmap]');
 
 	// pass by reference for entry
-	public function toHtml(string $content, Entry &$entry=null) : string {
+	public function toHtml(string $content, Entry &$entry) : string {
 		$t0 = microtime(true);
 		$this->codepenFlag = 0;	// reset for every new blog page
 		$this->numOfGalleries = 0;	// reset for every new blog page
@@ -544,8 +544,18 @@ EOD;
 		//$html = parent::toHtml($modConent);	// markdown to HTML
 		//$html = \FFI::string( $GLOBALS['ffi']->md4c_toHtml($modContent) );
 		$html = \FFI::string( \Saaze\Config::$H['global_ffi']->md4c_toHtml($modContent) );
-		if ($entry->data) $entry->data['excerpt'] = $this->getExcerpt($html,$entry);
-		$html = $this->cssGallery . $html . $this->jsGallery;
+		if ($entry->data) {
+			$entry->data['excerpt'] = $this->getExcerpt($html,$entry);
+			if ($hasGallery) {
+				$entry->data['gallery_css'] = $this->cssGallery;
+				$entry->data['gallery_js'] = $this->jsGallery;
+			}
+			if ($hasMarkmap) {
+				$entry->data['markmap_css'] = $this->cssMarkmap;
+				$entry->data['markmap_js'] = $this->jsMarkmap;
+			}
+		}
+		//$html = $this->cssGallery . $html . $this->jsGallery;	// does not pass test in https://validator.w3.org/
 		$GLOBALS['md2html'] += microtime(true) - $t1;
 
 		return $this->amplink($html);	// fix Markdown ampersand handling

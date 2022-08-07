@@ -23,19 +23,18 @@ _Simplified Saaze_ is, as the name implies, a simplifed version of _Saaze_. For 
 Entire code is ca. 1kLines of PHP and C code.
 
 ```bash
-$ wc *.php *.c
-  229   773  8642 BuildCommand.php
-   35    97   980 CollectionManager.php
-   25    74   757 Collection.php
+wc *.php *.c
+  214   747  8308 BuildCommand.php
+   40   111  1116 CollectionArray.php
+  133   455  4077 Collection.php
    41   178  1595 Config.php
-  131   428  3816 EntryManager.php
-   98   381  3460 Entry.php
-  555  2236 20272 MarkdownContentParser.php
-   73   227  2239 SaazeCli.php
-  112   478  6008 Saaze.php
-   91   285  3010 TemplateManager.php
+   96   381  3458 Entry.php
+  566  2268 20614 MarkdownContentParser.php
+   72   223  2140 SaazeCli.php
+  105   451  5670 Saaze.php
+   74   259  2604 TemplateManager.php
    82   242  1929 php_md4c_toHtml.c
- 1472  5399 52708 total
+ 1423  5315 51511 total
 ```
 
 # Credits

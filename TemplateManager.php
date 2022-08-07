@@ -4,31 +4,21 @@ namespace Saaze;
 
 
 class TemplateManager {
-	protected EntryManager $entryManager;
-
-
-	public function __construct(EntryManager $entryManager) {
-		$this->entryManager = $entryManager;
-	}
-
 	public function templateExists(string $template) : bool {
 		return file_exists(\Saaze\Config::$H['global_path_templates'] . "/{$template}.php");
 	}
 
 
 	public function renderCollection(Collection $collection, int|string $page) : string {
-		$this->entryManager->setCollection($collection);
-
 		$template = 'index';	//'collection';
 		if ($this->templateExists($collection->slug . '/index')) {
 			$template = $collection->slug . '/index';
 		}
 
-		//$entries    = $this->entryManager->entries;	//$this->entryManager->getEntriesForTemplate();
-		$entries    = $this->entryManager->entriesSansIndex;
-		$page       = (int) filter_var($page, FILTER_SANITIZE_NUMBER_INT);	// end-user might fiddle with page in Saaze.php
+		$entries = $collection->entriesSansIndex;
+		$page    = (int) filter_var($page, FILTER_SANITIZE_NUMBER_INT);	// end-user might fiddle with page in Saaze.php
 		$entries_per_page = $collection->data['entries_per_page'] ?? \Saaze\Config::$H['global_config_entries_per_page'];
-		$pagination = $this->entryManager->paginateEntriesForTemplate($entries, $page, $entries_per_page);
+		$pagination = $collection->paginateEntriesForTemplate($entries, $page, $entries_per_page);
 		$pagination['entries'] = array_map(function ($entry) { return $entry->data; }, $pagination['entries']);	// flatten entry
 
 		$url = $collection->data['index_route'];
@@ -44,10 +34,8 @@ class TemplateManager {
 	}
 
 
-	public function renderEntry (Entry $entry) : string {
+	public function renderEntry(Entry $entry) : string {
 		$GLOBALS['renderEntry'] += 1;
-		//$this->entryManager->setCollection($entry->collection);	// not used
-
 		$entryData = $entry->data;
 		$template  = 'entry';
 
@@ -70,16 +58,11 @@ class TemplateManager {
 		return $buf;
 	}
 
+
 	public function renderError(string $message, int $code) : string {
 		$template = 'error';
-		if ($this->templateExists("error{$code}")) {
-			$template = "error{$code}";
-		}
-
-		if (!$this->templateExists($template)) {
-			return "{$code} {$message}";
-		}
-
+		if ($this->templateExists("error{$code}")) $template = "error{$code}";
+		if (!$this->templateExists($template)) return "{$code} {$message}";
 		$rbase = $GLOBALS['rbase'] ?? "/";
 
 		ob_start();

@@ -17,8 +17,7 @@ namespace Saaze;
 
 
 class Saaze {
-	public CollectionManager $collectionManager;
-	public EntryManager $entryManager;
+	public CollectionArray $collectionArray;
 	public TemplateManager $templateManager;
 	public readonly bool $dbgPrt;
 	public readonly string $dbgFile;
@@ -31,13 +30,9 @@ class Saaze {
 	}
 
 	public function run() : bool {
-		$this->collectionManager = new \Saaze\CollectionManager();
-		$this->entryManager = new \Saaze\EntryManager();
-		$this->templateManager = new \Saaze\TemplateManager($this->entryManager);
-		return $this->handle();
-	}
+		$this->collectionArray = new CollectionArray();
+		$this->templateManager = new TemplateManager();
 
-	public function handle() : bool {
 		// See https://www.php.net/manual/en/features.commandline.webserver.php
 		// Not required if web-server handles static files directly.
 		// For example, in Hiawatha config: RequestURI isfile Return
@@ -63,7 +58,7 @@ class Saaze {
 		$request_uri = rtrim($query_string ?? $_SERVER['REQUEST_URI'],'/');
 		//$request_uri = '/' . ltrim($request_uri,'/');	// required for php -S 0:8000 case
 		if ($this->dbgPrt) file_put_contents($this->dbgFile,"request_uri=|{$request_uri}|\n",FILE_APPEND);
-		foreach ($this->collectionManager->getCollections() as $collection) {
+		foreach ($this->collectionArray->getCollections() as $collection) {
 			if (!isset($collection->data['entry_route'])) continue;
 			if (($slugStart = strpos($collection->data['entry_route'],"/{slug}")) === false) continue;	// no correct entry_route in collection yaml-file
 			$entryStart = substr($collection->data['entry_route'],0,$slugStart);
@@ -97,9 +92,7 @@ class Saaze {
 			if ($request_uri === $indexStart
 			|| (str_starts_with($request_uri,$indexStart.'/page/') && ctype_digit($page=substr($request_uri,$indexStartLen+6)))) {	// 6=strlen('/page/')
 				if ($this->dbgPrt) file_put_contents($this->dbgFile,"collection->slug=|{$collection->slug}|, match=200: indexStart=|${indexStart}|\n",FILE_APPEND);
-				$this->entryManager->setCollection($collection);
-				//$this->entryManager->entries = [];	// clear all read entries in EntryManager
-				$this->entryManager->getEntries();
+				$collection->getEntries();
 				echo $this->templateManager->renderCollection($collection, $page ?? 1);
 				return true;
 			}
