@@ -4,16 +4,17 @@ namespace Saaze;
 
 
 class Entry {	// here we store frontmatter, Markdown, and generated HTML
-	public Collection|null $collection = null;	// "father" collection for this entry
+	public Collection $collection;	// "father" collection for this entry
 	public string $filePath;
 	public array|null $data;	// hash containing frontmatter Yaml parsed, Markdown content in 'content_raw'
 	protected MarkdownContentParser $contentParser;
 
 
-	public function __construct(string $filePath) {
+	public function __construct(string $filePath, Collection $collection) {
 		$this->filePath      = $filePath;
 		$this->contentParser = new MarkdownContentParser;
 		$this->data = $this->parseEntry($this->filePath);
+		$this->collection = $collection;
 	}
 
 
@@ -59,11 +60,6 @@ class Entry {	// here we store frontmatter, Markdown, and generated HTML
 		$GLOBALS['YamlParser'] += microtime(true) - $t0;
 		$GLOBALS['YamlParserNcall'] += 1;
 		return $data;
-	}
-
-
-	public function setCollection(Collection $collection) : void {
-		$this->collection = $collection;
 	}
 
 	public function slug() : string {

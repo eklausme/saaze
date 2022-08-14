@@ -69,16 +69,15 @@ class Saaze {
 				// Here we would have to add the uglyURL case, if needed
 				$singleFile = \Saaze\Config::$H['global_path_content'] . '/' . $collection->slug . substr($request_uri,strlen($entryStart)) . '.md';
 				if ($this->dbgPrt) file_put_contents($this->dbgFile,"collection->slug=|{$collection->slug}|, singleFile1=|{$singleFile}|\n",FILE_APPEND);
-				$entry = new Entry($singleFile);
+				$entry = new Entry($singleFile,$collection);
 				if (isset($entry->data)) goto entryCase;
 				// Special case for index.md
 				$singleFile = \Saaze\Config::$H['global_path_content'] . '/' . $collection->slug . substr($request_uri,strlen($entryStart)) . '/index.md';
 				if ($this->dbgPrt) file_put_contents($this->dbgFile,"collection->slug=|{$collection->slug}|, singleFile2=|{$singleFile}|\n",FILE_APPEND);
-				$entry = new Entry($singleFile);
+				$entry = new Entry($singleFile,$collection);
 				if (!isset($entry->data)) goto indexCase;
 				entryCase: // process entry case
 				if ($this->dbgPrt) file_put_contents($this->dbgFile,"collection->slug=|{$collection->slug}|, 200\n",FILE_APPEND);
-				$entry->setCollection($collection);
 				$entry->getContentAndExcerpt();	//$entry->getContent();
 				$entry->getUrl();
 				echo $this->templateManager->renderEntry($entry);

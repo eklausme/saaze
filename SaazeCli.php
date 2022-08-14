@@ -46,8 +46,9 @@ class SaazeCli {
 		$singleFile = null;
 		$extractFile = 0;
 		$draft = false;	// =false: do not show drafts, =true: show drafts
+		$tags = false;
 
-		$options = getopt("b:efs:");
+		$options = getopt("b:efs:t");
 		//var_dump($options);
 		if (count($options) > 0) {
 			if (isset($options['b']) && strlen($options['b']) > 0 && $options['b'] !== "/") {
@@ -58,13 +59,14 @@ class SaazeCli {
 			if (isset($options['s']) && strlen($options['s']) > 0 && $options['s'] !== "/") {
 				$singleFile = $options['s'];
 			}
+			if (isset($options['t'])) $tags = true;
 		}
 
 		$collectionArray = new CollectionArray($draft);
 		$templateManager = new TemplateManager();
 		$buildMgr = new BuildCommand($collectionArray,$templateManager);
 
-		if (is_null($singleFile)) $buildMgr->buildAllStatic($buildDest);
+		if (is_null($singleFile)) $buildMgr->buildAllStatic($buildDest,$tags);
 		else $buildMgr->buildSingleStatic($dest,$singleFile,$extractFile);
 
 		//$this->stopXhprof();

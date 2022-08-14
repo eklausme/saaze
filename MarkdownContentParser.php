@@ -444,7 +444,7 @@ EOD;
 	}
 
 
-	private function getExcerpt(string $html, Entry &$entry=null) {
+	private function getExcerpt(string $html, Entry &$entry) : string {
 		$excerpt = strip_tags($html);
 		$length = $entry->collection->data['excerpt_length'] ?? \Saaze\Config::$H['global_excerpt_length'];
 

@@ -5,7 +5,7 @@
 
 # Simplified Saaze
 
-_Simplified Saaze_ is a fast, all-inclusive, flat-file CMS for simple websites and blogs. It's not designed to be a replacement for great CMS's (e.g. [WordPress](https://wordpress.com), [Statamic](https://statamic.com) etc.), rather it's designed to be a smaller, simpler alternative.
+_Simplified Saaze_ is a fast, all-inclusive, flat-file CMS for simple websites and blogs. It comes with no graphical user-interface, but rather is used entirely via command-line.
 
 Static site builders are fast but normally have a steep learning curve and require lots of tooling to make them work. We believe building a personal site should be stupidly simple. That's why _Simplified Saaze_ is built on the following principles.
 
@@ -24,22 +24,22 @@ Entire code is ca. 1kLines of PHP and C code.
 
 ```bash
 wc *.php *.c
-  214   747  8308 BuildCommand.php
+  234   871  9823 BuildCommand.php
    40   111  1116 CollectionArray.php
-  133   455  4077 Collection.php
-   41   178  1595 Config.php
-   96   381  3458 Entry.php
-  566  2268 20614 MarkdownContentParser.php
-   72   223  2140 SaazeCli.php
-  105   451  5670 Saaze.php
+  137   478  4239 Collection.php
+   46   206  1827 Config.php
+   92   373  3401 Entry.php
+  565  2267 20595 MarkdownContentParser.php
+   74   231  2207 SaazeCli.php
+  104   450  5654 Saaze.php
    74   259  2604 TemplateManager.php
    82   242  1929 php_md4c_toHtml.c
- 1423  5315 51511 total
+ 1448  5488 53395 total
 ```
 
 # Credits
 
 _Simplified Saaze_ was created by [Elmar Klausmeier](https://eklausmeier.goip.de/aux/about).
 
-[Saaze](https://saaze.dev) was created by [Gilbert Pellegrom](https://gilbitron.me) from [Dev7studios](https://dev7studios.co). Released under the MIT license.
+[Saaze](https://saaze.dev) was created by [Gilbert Pellegrom](https://gilbitron.me). Released under the MIT license.
 

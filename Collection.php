@@ -23,7 +23,12 @@ class Collection {
 		//return Yaml::parse(file_get_contents($filePath));
 		$GLOBALS['YamlParserNcall'] += 1;
 		$GLOBALS['parseCollectionNcall'] += 1;
-		return yaml_parse(file_get_contents($filePath));
+		if (($yaml = file_get_contents($filePath)) === false) {
+			// From CollectionArray::loadCollections() we know that file exists, but might be unreadable
+			printf("Cannot read %s\n",$filePath);
+			exit(4);
+		}
+		return yaml_parse($yaml);
 	}
 
 	public function getEntries() : array|null {
@@ -82,11 +87,10 @@ class Collection {
 	}
 
 	protected function loadEntry(string $filePath) : Entry|null {
-		$entry = new Entry($filePath);
+		$entry = new Entry($filePath,$this);
 		if (!isset($entry->data)) return null;	// relevant for Saaze.php
 		if ($this->draftOverride == false  &&  array_key_exists('draft',$entry->data)
 		&& $entry->data['draft']) return null;
-		$entry->setCollection($this);
 
 		$this->entries[$entry->slug()] = $entry;
 

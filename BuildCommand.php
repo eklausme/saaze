@@ -8,14 +8,16 @@ class BuildCommand {
 	protected string $buildDest;	// needed for rbase computation
 	protected CollectionArray $collectionArray;
 	protected TemplateManager $templateManager;
+	private array $cat_and_tag;
 
 
 	public function __construct(CollectionArray $collectionArray, TemplateManager $templateManager) {
 		$this->collectionArray = $collectionArray;
 		$this->templateManager = $templateManager;
+		$this->cat_and_tag = [ 'categories' => array(), 'tags' => array() ];
 	}
 
-	public function buildAllStatic(string $dest) : void {
+	public function buildAllStatic(string $dest, bool $tags) : void {
 		$t0 = microtime(true);
 
 		if (strpos($dest, '/') !== 0)	// Does not start with '/'?
@@ -30,6 +32,7 @@ class BuildCommand {
 		$collections     = $this->collectionArray->getCollections();
 		$ncollections    = count($collections);	// for debugging
 		$collectionCount = 0;
+		$totalCollection = 0;
 		$entryCount      = 0;
 
 		foreach ($collections as $collection) {
@@ -39,25 +42,24 @@ class BuildCommand {
 			$totalPages = ceil($nentries / $entries_per_page);
 			printf("\texecute(): filePath=%s, nentries=%d, totalPages=%d, entries_per_page=%d\n",$collection->filePath,$nentries,$totalPages,$entries_per_page);
 
+			++$totalCollection;
 			if ($this->buildCollectionIndex($collection, 0, $dest)) $collectionCount++;
 
 			for ($page=1; $page <= $totalPages; $page++)
 				$this->buildCollectionIndex($collection, $page, $dest);
 
 			foreach ($entries as $entry) {
-				$entry->setCollection($collection);
-
-				if ($this->buildEntry($collection, $entry, $dest)) {
-					$entryCount++;
-				}
+				if ($this->buildEntry($collection, $entry, $dest)) $entryCount++;
+				if ($tags) $this->build_cat_and_tag($entry,$collection->draftOverride);
 			}
 		}
+		if ($tags) $this->save_cat_and_tag();
 
 		$elapsedTime = microtime(true) - $t0;
 		$timeString  = number_format($elapsedTime, 2) . ' secs';
 		$memString   = $this->humanSize(memory_get_peak_usage());
 
-		echo("Finished creating {$collectionCount} collections and {$entryCount} entries ({$timeString} / {$memString})\n");
+		echo("Finished creating {$totalCollection} collections, {$collectionCount} with index, and {$entryCount} entries ({$timeString} / {$memString})\n");
 		printf("#collections=%d, YamlParser=%.4f/%d-%d, md2html=%.4f, MathParser=%.4f/%d, renderEntry=%d, content=%d/%d, excerpt=%d/%d\n",
 			$ncollections,
 			$GLOBALS['YamlParser'], $GLOBALS['YamlParserNcall'], $GLOBALS['parseCollectionNcall'],
@@ -96,8 +98,7 @@ class BuildCommand {
 		echo("Building single static site in {$dest} for {$collectionId} ...\n");
 
 		$collection = new Collection(\Saaze\Config::$H['global_path_content'] . "/" . $collectionId . ".yml");
-		$entry = new Entry($singleFile);
-		$entry->setCollection($collection);
+		$entry = new Entry($singleFile,$collection);
 		$entry->getContentAndExcerpt();	//$entry->getContent();
 		$entry->getUrl();	# must be computed after getContent()
 		if (!$this->buildEntry($collection, $entry, $dest))
@@ -152,19 +153,14 @@ class BuildCommand {
 
 		$collectionDir = $dest;
 
-		if ($collection->data['index_route'] !== '/') {
+		if ($collection->data['index_route'] !== '/')
 			$collectionDir = "{$dest}/" . ltrim($collection->data['index_route'], '/');
-		}
 
 		$collectionDir = rtrim($collectionDir, '/');
 
-		if ($page != 0) {
-			$collectionDir .= "/page/{$page}";
-		}
+		if ($page != 0) $collectionDir .= "/page/{$page}";
 
-		if (!is_dir($collectionDir)) {
-			mkdir($collectionDir, 0777, true);
-		}
+		if (!is_dir($collectionDir)) mkdir($collectionDir, 0777, true);
 		$collectionDir .= "/index.html";
 		$GLOBALS['fileToRender'] = $collectionDir;
 		$GLOBALS['rbase'] = $this->compRbase($collectionDir,$this->buildDest);
@@ -174,9 +170,7 @@ class BuildCommand {
 	}
 
 	private function buildEntry(Collection $collection, Entry $entry, string $dest) : bool {
-		if (!$collection->data['entry_route']) {
-			return false;
-		}
+		if (!$collection->data['entry_route']) return false;
 
 		$indexSpecial = 0;
 		$entryDir = "{$dest}/" . ltrim($collection->data['entry_route'], '/');
@@ -210,5 +204,31 @@ class BuildCommand {
 	private function humanSize(int $bytes) : string {
 		$i = floor(log($bytes, 1024));
 		return round($bytes / pow(1024, $i), [0,0,2,2,3][$i]).['B','kB','MB','GB','TB'][$i];
+	}
+
+	private function build_cat_and_tag(Entry $entry, bool $draftOverride) : void {
+		if ($draftOverride == false && array_key_exists('draft',$entry->data) && $entry->data['draft']) return;
+		$prefix = '../..';
+		foreach (array('categories','tags') as $i) {
+			if (!array_key_exists($i,$entry->data)) continue;
+			foreach ($entry->data[$i] as $k) {
+				//$date = substr($entry->data['date'],0,10);	// only yyyy-mm-dd
+				//$url = "<a href=\"{$prefix}{$entry->data['url']}\">{$date}: {$entry->data['title']}</a>";
+				if (array_key_exists($k,$this->cat_and_tag[$i]))
+					array_push($this->cat_and_tag[$i][$k],array($entry->data['url'],$entry->data['date'],$entry->data['title']));	// push to existing
+				else
+					$this->cat_and_tag[$i][$k] = [ array($entry->data['url'],$entry->data['date'],$entry->data['title']) ];	// create single element list
+			}
+		}
+	}
+
+	private function save_cat_and_tag() : void {
+		foreach (array('categories','tags') as $i) {
+			if (!array_key_exists($i,$this->cat_and_tag)) continue;
+			ksort($this->cat_and_tag[$i]);	// sort keys
+			foreach ($this->cat_and_tag[$i] as $k) sort($k);	// sort values, i.e., pushed values in list
+		}
+		$fname = \Saaze\Config::$H['global_path_content'] . '/' . 'cat_and_tag.json';
+		file_put_contents($fname, json_encode($this->cat_and_tag,JSON_PRETTY_PRINT));
 	}
 }
