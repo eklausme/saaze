@@ -17,7 +17,7 @@ class BuildCommand {
 		$this->cat_and_tag = [ 'categories' => array(), 'tags' => array() ];
 	}
 
-	public function buildAllStatic(string $dest, bool $tags) : void {
+	public function buildAllStatic(string $dest, bool $tags, bool $rssXmlFeed) : void {
 		$t0 = microtime(true);
 
 		if (strpos($dest, '/') !== 0)	// Does not start with '/'?
@@ -54,6 +54,8 @@ class BuildCommand {
 			}
 		}
 		if ($tags) $this->save_cat_and_tag();
+		if ($rssXmlFeed)
+			file_put_contents($dest.'/feed.xml', $this->templateManager->renderRss($collections));
 
 		$elapsedTime = microtime(true) - $t0;
 		$timeString  = number_format($elapsedTime, 2) . ' secs';
