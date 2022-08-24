@@ -73,8 +73,7 @@ class TemplateManager {
 	}
 
 
-	public function renderRss(array $collections) : string {
-		$template = 'rss';
+	public function renderGeneral(array $collections, string $template) : string {
 		if (!$this->templateExists($template)) return "";
 		$rbase = $GLOBALS['rbase'] ?? "/";
 
