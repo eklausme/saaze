@@ -71,7 +71,7 @@ class SaazeCli {
 		$buildMgr = new BuildCommand($collectionArray,$templateManager);
 
 		if (is_null($singleFile)) $buildMgr->buildAllStatic($buildDest,$tags,$rssXmlFeed,$sitemap);
-		else $buildMgr->buildSingleStatic($dest,$singleFile,$extractFile);
+		else $buildMgr->buildSingleStatic($buildDest,$singleFile,$extractFile);
 
 		//$this->stopXhprof();
 	}
