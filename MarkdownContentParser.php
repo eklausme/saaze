@@ -254,6 +254,7 @@ EOD;
 	 *
 	 * Make sure that your layout-template contains the following:
 	 *    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+	 * or set "Twitter: true" in your frontmatter.
 	 */
 	private function twitter(string $content) : string {
 		return $this->myTag($content, "[twitter]", "[/twitter]",

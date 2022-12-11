@@ -50,7 +50,7 @@ class SaazeCli {
 		$sitemap = false;
 		$rssXmlFeed = false;
 
-		$options = getopt("b:efmrs:t");
+		$options = getopt("b:efhmrs:tv");
 		//var_dump($options);
 		if (count($options) > 0) {
 			if (isset($options['b']) && strlen($options['b']) > 0 && $options['b'] !== "/") {
@@ -58,12 +58,29 @@ class SaazeCli {
 			}
 			if (isset($options['e'])) $extractFile = 1;
 			if (isset($options['f'])) $draft = true;
+			if (isset($options['h'])) {
+				printf("Simplified Saaze, a static site generator\n"
+					."\t-b <buildDir> specify build directory, e.g., /tmp/build\n"
+					."\t-e            generate extract file for single file (only with -s)\n"
+					."\t-f            include draft posts when generating static content\n"
+					."\t-h            this help message\n"
+					."\t-m            generate sitemap\n"
+					."\t-r            generate RSS feed\n"
+					."\t-s <file>     only generate static content for single file\n"
+					."\t-t            generate categories and tags\n"
+					."\t-v            version information\n");
+				return;
+			}
 			if (isset($options['m'])) $sitemap = true;
 			if (isset($options['r'])) $rssXmlFeed = true;
 			if (isset($options['s']) && strlen($options['s']) > 0 && $options['s'] !== "/") {
 				$singleFile = $options['s'];
 			}
 			if (isset($options['t'])) $tags = true;
+			if (isset($options['v'])) {
+				printf("Version 1.18, 11-Dec-2022, written by Elmar Klausmeier\n");
+				return;
+			}
 		}
 
 		$collectionArray = new CollectionArray($draft);
