@@ -10,6 +10,7 @@
    Elmar Klausmeier, 15-Apr-2022, debugged gallery()
    Elmar Klausmeier, 18-Apr-2022, integrated excerpt
    Elmar Klausmeier, 20-Apr-2022, added markmap()
+   Elmar Klausmeier, 31-Dec-2022, added youtubelt() therefore reducing JS bloat
 */
 
 namespace Saaze;
@@ -229,6 +230,31 @@ EOD;
 			"<iframe width=560 height=315 src=https://www.youtube.com/embed/",
 			" frameborder=0 allow=\"accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture\" allowfullscreen></iframe>"
 		);
+	}
+
+
+	/**
+	 * YouTube lowtech/light is similar to [youtube] but does not incur the hight cost of YouTube's JavaScript libraries
+	 * Convert [youtubelt]xxx[/youtubelt] tags in your markdown to HTML:
+	 * <a href=\"https://www.youtube.com/watch?v=xxx"><img src="https://i.ytimg.com/vi/xxx/hqdefault.jpg"></a>
+	 * Example: [youtubelt] a5pnnkXpX-U     [/youtubelt]
+	 */
+	private function youtubelt(string $content) : string {
+		$last = 0;
+		$begintag = "[youtubelt]";
+		$endtag = "[/youtubelt]";
+		$len1 = strlen($begintag);
+		$len2 = strlen($endtag);
+		for (;;) {
+			$start = strpos($content,$begintag,$last);
+			if ($start === false) break;
+			$end = strpos($content,$endtag,$start+$len1);
+			if ($end === false) break;
+			$xxx = trim(substr($content,$start+$len1,$end-$start-$len1));
+			$last = $end + $len2;
+			$content = substr_replace($content, "<a href=\"https://www.youtube.com/watch?v=".$xxx."\"><img src=\"https://i.ytimg.com/vi/".$xxx."/hqdefault.jpg\"></a>", $start, $last-$start);
+		}
+		return $content;
 	}
 
 
@@ -462,7 +488,7 @@ EOD;
 	/**
 	 * Parse raw content and return HTML
 	 */
-	private array $keywords = Array('MathJax/Dummy','[youtube]','[vimeo]','[twitter]','[codepen]','[wpvideo','[mermaid]','[gallery]','[markmap]');
+	private array $keywords = Array('MathJax/Dummy','[youtube]','[youtubelt]','[vimeo]','[twitter]','[codepen]','[wpvideo','[mermaid]','[gallery]','[markmap]');
 
 	// pass by reference for entry
 	public function toHtml(string $content, Entry &$entry) : string {
@@ -479,20 +505,21 @@ EOD;
 		// Performance optimization only, no functional benefit.
 		// Only marginally relevant if you have more than a few hundred posts.
 		$hasKeyword = 0;	// used as bitset
-		for ($i=1; $i<=8; ++$i) {
+		for ($i=1; $i<=9; ++$i) {	// 9 = count($keywords)-1
 			if (strpos($content,$this->keywords[$i]) === false) continue;
 			$hasKeyword |= 1 << $i;
 		}
 		$hasMath = $entry->data['MathJax'] ?? false;	//isset($frontmatter['MathJax']);
 		if ($hasMath) $hasKeyword |= 1;
 		$hasYoutube = $hasKeyword & 2;
-		$hasVimeo =$hasKeyword & 4;
-		$hasTwitter = $hasKeyword & 8;
-		$hasCodepen = $hasKeyword & 16;
-		$hasWpvideo = $hasKeyword & 32;
-		$hasMermaid = $hasKeyword & 64;
-		$hasGallery = $hasKeyword & 128;
-		$hasMarkmap = $hasKeyword & 256;
+		$hasYoutubeLT = $hasKeyword & 4;
+		$hasVimeo =$hasKeyword & 8;
+		$hasTwitter = $hasKeyword & 16;
+		$hasCodepen = $hasKeyword & 32;
+		$hasWpvideo = $hasKeyword & 64;
+		$hasMermaid = $hasKeyword & 128;
+		$hasGallery = $hasKeyword & 256;
+		$hasMarkmap = $hasKeyword & 512;
 
 		if ($hasKeyword) {
 			$arr = explode("`",$content);	// known deficiency: does not cope for HTML comments
@@ -526,6 +553,7 @@ EOD;
 					$arr[$i] = $this->inlineMath($arr[$i]);
 				}
 				if ($hasYoutube) $arr[$i] = $this->youtube($arr[$i]);
+				if ($hasYoutubeLT) $arr[$i] = $this->youtubelt($arr[$i]);
 				if ($hasVimeo) $arr[$i] = $this->vimeo($arr[$i]);
 				if ($hasTwitter) $arr[$i] = $this->twitter($arr[$i]);
 				if ($hasCodepen) $arr[$i] = $this->codepen($arr[$i]);
