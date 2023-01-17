@@ -252,7 +252,7 @@ EOD;
 			if ($end === false) break;
 			$xxx = trim(substr($content,$start+$len1,$end-$start-$len1));
 			$last = $end + $len2;
-			$content = substr_replace($content, "<a href=\"https://www.youtube.com/watch?v=".$xxx."\"><img src=\"https://i.ytimg.com/vi/".$xxx."/hqdefault.jpg\"></a>", $start, $last-$start);
+			$content = substr_replace($content, "<a href=\"https://www.youtube.com/watch?v=".$xxx."\"><img alt=YouTube src=\"https://i.ytimg.com/vi/".$xxx."/hqdefault.jpg\"></a>", $start, $last-$start);
 		}
 		return $content;
 	}
