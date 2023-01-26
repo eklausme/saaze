@@ -11,6 +11,7 @@
    Elmar Klausmeier, 18-Apr-2022, integrated excerpt
    Elmar Klausmeier, 20-Apr-2022, added markmap()
    Elmar Klausmeier, 31-Dec-2022, added youtubelt() therefore reducing JS bloat
+   Elmar Klausmeier, 26-Jan-2023, fixed \cases{} TeX issue, needs config in templates as well
 */
 
 namespace Saaze;
@@ -185,12 +186,18 @@ EOD;
 			$math = str_replace('_','\_',$math);
 			$math = str_replace('\\{','\\\\{',$math);
 			$math = str_replace('\\}','\\\\}',$math);
+			/* Substitute $ to \\(
 			$content = substr($content,0,$start)
 				. '\\\\('
 				. $math
 				. '\\\\)'
 				. substr($content,$end+1);
 			$last = $start + strlen('\\\\(') + strlen($math) + strlen('\\\\)');
+			*/
+			$content = substr($content,0,$start)
+				. '$' . $math . '$'
+				. substr($content,$end+1);
+			$last = $start + 2+ strlen($math);
 		}
 		return $content;
 	}
