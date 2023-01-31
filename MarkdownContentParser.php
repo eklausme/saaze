@@ -183,7 +183,7 @@ EOD;
 			// Replace $xyz$" with \\(xyz\\)
 			$last = $end + 1;
 			$math = substr($content,$start+1,$end-$start-1);
-			$math = str_replace('_','\_',$math);
+			//$math = str_replace('_','\_',$math);
 			$math = str_replace('\\{','\\\\{',$math);
 			$math = str_replace('\\}','\\\\}',$math);
 			/* Substitute $ to \\(

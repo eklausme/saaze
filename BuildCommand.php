@@ -180,7 +180,7 @@ class BuildCommand {
 		$entryDir = "{$dest}/" . ltrim($collection->data['entry_route'], '/');
 		$entryDir = str_replace('{slug}', $entry->slug(), $entryDir);
 
-		if (substr($entry->filePath,-9) === '/index.md') {	// 9=strlen('/index.md')
+		if (substr($entry->filePath,-9) === DIRECTORY_SEPARATOR . 'index.md') {	// 9=strlen('/index.md')
 			$entryDir = substr($entryDir,0,strlen($entryDir)-5);	// drop 'index' string, 5=strlen('index')
 			$indexSpecial = 1;
 		}
