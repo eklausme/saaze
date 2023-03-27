@@ -48,9 +48,10 @@ class SaazeCli {
 		$draft = false;	// =false: do not show drafts, =true: show drafts
 		$tags = false;
 		$sitemap = false;
+		$overview = false;
 		$rssXmlFeed = false;
 
-		$options = getopt("b:efhmrs:tv");
+		$options = getopt("b:efhmors:tv");
 		//var_dump($options);
 		if (count($options) > 0) {
 			if (isset($options['b']) && strlen($options['b']) > 0 && $options['b'] !== "/") {
@@ -65,6 +66,7 @@ class SaazeCli {
 					."\t-f            include draft posts when generating static content\n"
 					."\t-h            this help message\n"
 					."\t-m            generate sitemap\n"
+					."\t-o            generate overview\n"
 					."\t-r            generate RSS feed\n"
 					."\t-s <file>     only generate static content for single file\n"
 					."\t-t            generate categories and tags\n"
@@ -72,13 +74,14 @@ class SaazeCli {
 				return;
 			}
 			if (isset($options['m'])) $sitemap = true;
+			if (isset($options['o'])) $overview = true;
 			if (isset($options['r'])) $rssXmlFeed = true;
 			if (isset($options['s']) && strlen($options['s']) > 0 && $options['s'] !== "/") {
 				$singleFile = $options['s'];
 			}
 			if (isset($options['t'])) $tags = true;
 			if (isset($options['v'])) {
-				printf("Version 1.22, 31-Jan-2023, written by Elmar Klausmeier\n");
+				printf("Version 1.23, 18-Mar-2023, written by Elmar Klausmeier\n");
 				return;
 			}
 		}
@@ -87,7 +90,7 @@ class SaazeCli {
 		$templateManager = new TemplateManager();
 		$buildMgr = new BuildCommand($collectionArray,$templateManager);
 
-		if (is_null($singleFile)) $buildMgr->buildAllStatic($buildDest,$tags,$rssXmlFeed,$sitemap);
+		if (is_null($singleFile)) $buildMgr->buildAllStatic($buildDest,$tags,$rssXmlFeed,$sitemap,$overview);
 		else $buildMgr->buildSingleStatic($buildDest,$singleFile,$extractFile);
 
 		//$this->stopXhprof();
