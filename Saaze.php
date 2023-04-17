@@ -44,6 +44,11 @@ class Saaze {
 		if ($_SERVER['REQUEST_URI'] === '/sitemap.html') {
 			$collections = $this->collectionArray->getCollections();
 			foreach ($collections as $collection) $collection->getEntries();
+			echo $this->templateManager->renderGeneral($collections,'overview');
+			return true;
+		} else if ($_SERVER['REQUEST_URI'] === '/sitemap.xml') {
+			$collections = $this->collectionArray->getCollections();
+			foreach ($collections as $collection) $collection->getEntries();
 			echo $this->templateManager->renderGeneral($collections,'sitemap');
 			return true;
 		} else if ($_SERVER['REQUEST_URI'] === '/feed.xml') {
@@ -53,7 +58,7 @@ class Saaze {
 			return true;
 		}
 
-		// Below code required so that rbase works correctly in dynamic mode
+		// Below code is required so that rbase works correctly in dynamic mode
 		// Emulate what Hiawatha web-server does on its own
 		if (substr($_SERVER['REQUEST_URI'],-1) !== '/') {
 			header('Location: ' . $_SERVER['REQUEST_URI'] . '/'); // Redirect browser to same URL with slash added at end
