@@ -68,16 +68,15 @@ class Entry {	// here we store frontmatter, Markdown, and generated HTML
 		$slugStr = substr($this->filePath, 0, $dotPos);
 		$slugStr = str_replace(\Saaze\Config::$H['global_path_content'], '', $slugStr);
 		$slugStr = str_replace("/{$this->collection->slug}", '', $slugStr);
-		$slugStr = ltrim($slugStr, '/');
-
-		return $slugStr;
+		return ltrim($slugStr, '/');
 	}
 
 	public function getUrl() : string {
-		if (array_key_exists('url',$this->data)) return $this->data['url'];
+		if (array_key_exists('url',$this->data)) return $this->data['url'];	// user can overwrite in Markdown file
 
 		$slugStr = $this->slug();
 		if (substr($slugStr,-6) === '/index') $slugStr = substr($slugStr,0,-6);	// strip '/index'
+		else if ($slugStr === 'index') $slugStr = '';
 
 		//return rtrim(str_replace('{slug}', $slugStr, $this->collection->data['entry_route']), '/');
 		$this->data['url'] = rtrim(str_replace('{slug}', $slugStr, $this->collection->data['entry_route']), '/');

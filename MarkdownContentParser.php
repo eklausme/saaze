@@ -12,6 +12,7 @@
    Elmar Klausmeier, 20-Apr-2022, added markmap()
    Elmar Klausmeier, 31-Dec-2022, added youtubelt() therefore reducing JS bloat
    Elmar Klausmeier, 26-Jan-2023, fixed \cases{} TeX issue, needs config in templates as well
+   Elmar Klausmeier, 25-Apr-2023, added tiktok(), corrected twitter()
 */
 
 namespace Saaze;
@@ -280,6 +281,45 @@ EOD;
 
 
 	/**
+	 * Convert [tiktok]xxx[/tiktok] tags in your markdown to HTML:
+	 * <blockquote class="tiktok-embed" cite="https://www.tiktok.com/@CREATOR/video/VIDEOID" data-video-id="VIDEOID" style="max-width: 605px;min-width: 325px;">
+	 *     <section><a target="_blank" title="@CREATOR" href="https://www.tiktok.com/@CREATOR?refer=embed">@CREATOR</a></section>
+	 * </blockquote>
+	 * <script async src="https://www.tiktok.com/embed.js"></script>
+	 *
+	 * Example: [tiktok] https://www.tiktok.com/@neuroscienceandyou/video/7223065474198818053 [/tiktok]
+	 */
+	private function tiktok(string $content) : string {
+		$last = 0;
+		$begintag = "[tiktok]";
+		$endtag = "[/tiktok]";
+		$len1 = strlen($begintag);
+		$len2 = strlen($endtag);
+		for (;;) {
+			$start = strpos($content,$begintag,$last);
+			if ($start === false) break;
+			$end = strpos($content,$endtag,$start+$len1);
+			if ($end === false) break;
+			$xxx = trim(substr($content,$start+$len1,$end-$start-$len1));
+			$creatorpos1 = strpos($xxx,'@');
+			if ($creatorpos1 === false) break;	// no creator
+			$creatorpos2 = strpos($xxx,'/video/',$creatorpos1);
+			if ($creatorpos2 === false) break;	// no creator
+			$creator = substr($xxx,$creatorpos1,$creatorpos2 - $creatorpos1);
+			$videoId = substr($xxx,$creatorpos2+7);
+			$last = $end + $len2;
+			$content = substr_replace($content,
+				'<blockquote class="tiktok-embed" cite="https://www.tiktok.com/' . $creator . '/video/' . $videoId
+				. '" data-video-id="' . $videoId . '" style="max-width: 605px;min-width: 325px;">' . "\n\t"
+				. '<section><a target="_blank" title="' . $creator . '" href="https://www.tiktok.com/' . $creator . '?refer=embed">' . $creator
+				. "</a></section>\n</blockquote>\n",
+			       	$start, $last-$start);
+		}
+		return $content;
+	}
+
+
+	/**
 	 * Convert [twitter]xxx[/twitter] tags in your markdown HTML which Twitter-JavaScript understands.
 	 * xxx is for example: https://twitter.com/eklausmeier/status/1352896936051937281
 	 * i.e., just the URL, no other information is required.
@@ -292,7 +332,7 @@ EOD;
 	private function twitter(string $content) : string {
 		return $this->myTag($content, "[twitter]", "[/twitter]",
 			"<blockquote class=\"twitter-tweet\"><a href=\"",
-			"\"</a></blockquote>"
+			"\"></a></blockquote>"
 		);
 	}
 
@@ -495,7 +535,7 @@ EOD;
 	/**
 	 * Parse raw content and return HTML
 	 */
-	private array $keywords = Array('MathJax/Dummy','[youtube]','[youtubelt]','[vimeo]','[twitter]','[codepen]','[wpvideo','[mermaid]','[gallery]','[markmap]');
+	private array $keywords = Array('MathJax/Dummy','[youtube]','[youtubelt]','[vimeo]','[tiktok]','[twitter]','[codepen]','[wpvideo','[mermaid]','[gallery]','[markmap]');
 
 	// pass by reference for entry
 	public function toHtml(string $content, Entry &$entry) : string {
@@ -512,7 +552,7 @@ EOD;
 		// Performance optimization only, no functional benefit.
 		// Only marginally relevant if you have more than a few hundred posts.
 		$hasKeyword = 0;	// used as bitset
-		for ($i=1; $i<=9; ++$i) {	// 9 = count($keywords)-1
+		for ($i=1; $i<=10; ++$i) {	// 10 = count($keywords)-1
 			if (strpos($content,$this->keywords[$i]) === false) continue;
 			$hasKeyword |= 1 << $i;
 		}
@@ -521,12 +561,13 @@ EOD;
 		$hasYoutube = $hasKeyword & 2;
 		$hasYoutubeLT = $hasKeyword & 4;
 		$hasVimeo =$hasKeyword & 8;
-		$hasTwitter = $hasKeyword & 16;
-		$hasCodepen = $hasKeyword & 32;
-		$hasWpvideo = $hasKeyword & 64;
-		$hasMermaid = $hasKeyword & 128;
-		$hasGallery = $hasKeyword & 256;
-		$hasMarkmap = $hasKeyword & 512;
+		$hasTiktok = $hasKeyword & 16;
+		$hasTwitter = $hasKeyword & 32;
+		$hasCodepen = $hasKeyword & 64;
+		$hasWpvideo = $hasKeyword & 128;
+		$hasMermaid = $hasKeyword & 256;
+		$hasGallery = $hasKeyword & 512;
+		$hasMarkmap = $hasKeyword & 1024;
 
 		if ($hasKeyword) {
 			$arr = explode("`",$content);	// known deficiency: does not cope for HTML comments
@@ -562,6 +603,7 @@ EOD;
 				if ($hasYoutube) $arr[$i] = $this->youtube($arr[$i]);
 				if ($hasYoutubeLT) $arr[$i] = $this->youtubelt($arr[$i]);
 				if ($hasVimeo) $arr[$i] = $this->vimeo($arr[$i]);
+				if ($hasTiktok) $arr[$i] = $this->tiktok($arr[$i]);
 				if ($hasTwitter) $arr[$i] = $this->twitter($arr[$i]);
 				if ($hasCodepen) $arr[$i] = $this->codepen($arr[$i]);
 				if ($hasWpvideo) $arr[$i] = $this->wpvideo($arr[$i]);
