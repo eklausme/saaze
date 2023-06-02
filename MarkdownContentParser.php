@@ -492,32 +492,6 @@ EOD;
 	}
 
 
-	/**
-	 * Correct Markdown bug: ampersands wrongly htmlified in links
-	 * Convert href="http://a.com&amp;22" to href="http://a.com&22"
-	 */
-	private function amplink(string $html) : string {
-		$begintag = array(" href=\"http", " src=\"http");
-		$i = 0;
-		foreach($begintag as $tag) {
-			$last = 0;
-			for(;;) {
-				$start = strpos($html,$tag,$last);
-				if ($start === false) break;
-				$last = $start + 10;
-				$end = strpos($html,"\"",$last);
-				if ($end === false) break;
-				$link = substr($html,$start,$end-$start);
-				$link = str_replace("&amp;","&",$link);
-				$html = substr_replace($html, $link, $start, $end-$start);
-				++$i;
-			}
-		}
-		//printf("\t\tamplink() changed %d times\n",$i);
-		return $html;
-	}
-
-
 	private function getExcerpt(string $html, Entry &$entry) : string {
 		$excerpt = strip_tags($html);
 		$length = $entry->collection->data['excerpt_length'] ?? \Saaze\Config::$H['global_excerpt_length'];
@@ -636,7 +610,7 @@ EOD;
 		//$html = $this->cssGallery . $html . $this->jsGallery;	// does not pass test in https://validator.w3.org/
 		$GLOBALS['md2html'] += microtime(true) - $t1;
 
-		return $this->amplink($html);	// fix Markdown ampersand handling
+		return $html;
 	}
 
 

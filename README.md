@@ -28,13 +28,13 @@ wc *.php *.c
    40   111  1116 CollectionArray.php
   137   478  4239 Collection.php
    46   206  1827 Config.php
-   92   373  3401 Entry.php
-  601  2434 22147 MarkdownContentParser.php
+   91   385  3464 Entry.php
+  617  2524 23313 MarkdownContentParser.php
    98   334  3252 SaazeCli.php
-  116   487  6194 Saaze.php
+  121   507  6472 Saaze.php
    86   293  2935 TemplateManager.php
    82   242  1929 php_md4c_toHtml.c
- 1538  5849 57301 total
+ 1558  5971 58808 total
 ```
 
 # Credits
