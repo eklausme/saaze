@@ -52,9 +52,9 @@ class Entry {	// here we store frontmatter, Markdown, and generated HTML
 		$matter = substr($content,$pos1,$pos2-3-$pos1);
 		$body = substr($content,$pos2);
 		//$matter = Yaml::parse($matter);	// slow and additional dependency
-		$matter = yaml_parse($matter);	// cuts almost 40% of the runtime, so highly recommended
+		$data = yaml_parse($matter);	// cuts almost 40% of the runtime, so highly recommended
+		if ($data === false) fprintf(STDERR,"%s: YAML could not be parsed in parseEntry()\n",$filePath);
 
-		$data = $matter;
 		$data['content_raw'] = $body;
 
 		$GLOBALS['YamlParser'] += microtime(true) - $t0;

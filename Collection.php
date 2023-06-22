@@ -28,7 +28,9 @@ class Collection {
 			printf("Cannot read %s\n",$filePath);
 			exit(4);
 		}
-		return yaml_parse($yaml);
+		if (($yaml = yaml_parse($yaml)) === false)
+			fprintf(STDERR,"%s: YAML could not be parsed in parseCollection()\n",$filePath);
+		return $yaml;
 	}
 
 	public function getEntries() : array|null {
