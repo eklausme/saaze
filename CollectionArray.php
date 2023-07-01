@@ -7,7 +7,7 @@ class CollectionArray {
 	protected array $collections = [];
 	public bool $draftOverride;
 
-	public function __construct(bool $draft = true) {
+	public function __construct(bool $draft = false) {
 		$this->draftOverride = $draft;
 	}
 

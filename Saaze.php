@@ -94,6 +94,7 @@ class Saaze {
 				$entry = new Entry($singleFile,$collection);
 				if (!isset($entry->data)) goto indexCase;
 				entryCase: // process entry case
+				if (($entry->data['draft'] ?? false) || !($entry->data['entry'] ?? true)) break;
 				if ($this->dbgPrt) file_put_contents($this->dbgFile,"collection->slug=|{$collection->slug}|, 200\n",FILE_APPEND);
 				$entry->getContentAndExcerpt();	//$entry->getContent();
 				$entry->getUrl();

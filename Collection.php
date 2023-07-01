@@ -45,9 +45,7 @@ class Collection {
 
 	// Sort array entriesSansIndex
 	protected function sortEntries() : void {
-		if (empty($this->data['sort_field'])) {
-			return;
-		}
+		if (empty($this->data['sort_field'])) return;
 
 		$field     = $this->data['sort_field'] ?? 'title';
 		$direction = strtolower( $this->data['sort_direction'] ?? 'asc' );
@@ -67,9 +65,7 @@ class Collection {
 
 	protected function loadEntries() : array {
 		$collectionDir = \Saaze\Config::$H['global_path_content'] . '/' . $this->slug;
-		if (!is_dir($collectionDir)) {
-			return [];
-		}
+		if (!is_dir($collectionDir)) return [];
 
 		$this->loadMkdwnRecursive($collectionDir);
 
@@ -88,11 +84,11 @@ class Collection {
 		}
 	}
 
-	protected function loadEntry(string $filePath) : Entry|null {
+	protected function loadEntry(string $filePath) : void {
 		$entry = new Entry($filePath,$this);
-		if (!isset($entry->data)) return null;	// relevant for Saaze.php
-		if ($this->draftOverride == false  &&  array_key_exists('draft',$entry->data)
-		&& $entry->data['draft']) return null;
+		if (!isset($entry->data)) return;
+		if ($this->draftOverride === false  &&  ($entry->data['draft'] ?? false))
+			return;
 
 		$this->entries[$entry->slug()] = $entry;
 
@@ -100,14 +96,12 @@ class Collection {
 		$entry->getUrl();	# must be computed after getContent()
 		//$entry->getExcerpt();
 
-		if (substr($entry->filePath,-9) !== '/index.md')
+		if (substr($entry->filePath,-9) !== '/index.md' && ($entry->data['index'] ?? true))
 			$this->entriesSansIndex[] = $entry;
-
-		return $entry;
 	}
 
 	public function paginateEntriesForTemplate(array $entries, int $page, int $perPage) : array {
-		$totalEntries = count($entries);
+		$totalEntries = count($entries);	// when called from renderCollection(), this is entriesSansIndex[]
 
 		if ($page < 1) $page = 1;
 		if ($perPage < 1) $perPage = 1;

@@ -49,8 +49,10 @@ class BuildCommand {
 				$this->buildCollectionIndex($collection, $page, $dest);
 
 			foreach ($entries as $entry) {
-				if ($this->buildEntry($collection, $entry, $dest)) $entryCount++;
-				if ($tags) $this->build_cat_and_tag($entry,$collection->draftOverride);
+				if ($entry->data['entry'] ?? true) {
+					if ($this->buildEntry($collection, $entry, $dest)) $entryCount++;
+					if ($tags) $this->build_cat_and_tag($entry,$collection->draftOverride);
+				}
 			}
 		}
 		if ($tags) $this->save_cat_and_tag();
