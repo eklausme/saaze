@@ -20,7 +20,7 @@ _Simplified Saaze_ is, as the name implies, a simplifed version of _Saaze_. For 
 
 # Easy to understand
 
-Entire code is ca. 1kLines of PHP and C code.
+Entire code is ca. 1.5kLines of PHP and C code.
 
 ```bash
 wc *.php *.c
@@ -28,13 +28,13 @@ wc *.php *.c
    40   111  1117 CollectionArray.php
   133   492  4351 Collection.php
    46   206  1827 Config.php
-   91   394  3542 Entry.php
+   93   400  3698 Entry.php
   663  2748 25184 MarkdownContentParser.php
-   98   334  3252 SaazeCli.php
+   98   336  3261 SaazeCli.php
   122   516  6557 Saaze.php
    86   293  2935 TemplateManager.php
    82   242  1929 php_md4c_toHtml.c
- 1603  6233 61004 total
+ 1605  6241 61169 total
 ```
 
 # Credits

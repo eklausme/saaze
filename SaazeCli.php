@@ -65,8 +65,8 @@ class SaazeCli {
 					."\t-e            generate extract file for single file (only with -s)\n"
 					."\t-f            include draft posts when generating static content\n"
 					."\t-h            this help message\n"
-					."\t-m            generate sitemap\n"
-					."\t-o            generate overview\n"
+					."\t-m            generate XML sitemap\n"
+					."\t-o            generate HTML overview\n"
 					."\t-r            generate RSS feed\n"
 					."\t-s <file>     only generate static content for single file\n"
 					."\t-t            generate categories and tags\n"
@@ -81,7 +81,7 @@ class SaazeCli {
 			}
 			if (isset($options['t'])) $tags = true;
 			if (isset($options['v'])) {
-				printf("Version 1.28, 01-Jul-2023, written by Elmar Klausmeier\n");
+				printf("Version 1.29, 08-Jul-2023, written by Elmar Klausmeier\n");
 				return;
 			}
 		}

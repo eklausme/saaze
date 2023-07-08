@@ -87,5 +87,7 @@ class Entry {	// here we store frontmatter, Markdown, and generated HTML
 		$GLOBALS['content'] += 1;
 		if (array_key_exists('content',$this->data)) $GLOBALS['contentCached'] += 1;
 		$this->data['content'] = $this->contentParser->toHtml($this->data['content_raw'],$this);
+		$this->data['wordcount'] = str_word_count($this->data['content_raw']);
+		$this->data['minutes_read'] = (int)max(1,round($this->data['wordcount']/225.0));
 	}
 }
