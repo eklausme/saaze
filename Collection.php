@@ -93,7 +93,7 @@ class Collection {
 		$this->entries[$entry->slug()] = $entry;
 
 		$entry->getContentAndExcerpt();
-		$entry->getUrl();	# must be computed after getContent()
+		$entry->getUrl();	# must be computed after getContentAndExcerpt()
 		//$entry->getExcerpt();
 
 		if (substr($entry->filePath,-9) !== '/index.md' && ($entry->data['index'] ?? true))

@@ -526,7 +526,7 @@ EOD;
 			$dataLine = ltrim(str_ireplace('/nonr','',$dataLine,$count));
 			$dataLine = (strlen($dataLine) > 0 ? ' ' : '') . $dataLine;
 			$html = substr($html,0,$start)
-				. "</p>\n<pre" . ($count > 0 ? '' : ' class="line-numbers"') . $dataLine . '>'
+				. ">\n<pre" . ($count > 0 ? '' : ' class="line-numbers"') . $dataLine . '>'
 				. '<code class="language-'
 				. substr($html,$last,$leftb-$last)
 				. substr($html,$rightb+1);
@@ -577,8 +577,8 @@ EOD;
 		if ($hasMath) $hasKeyword |= 1;
 		$hasYoutube = $hasKeyword & 2;
 		$hasYoutubeLT = $hasKeyword & 4;
-		$hasVimeo =$hasKeyword & 8;
-		$hasTiktok = $hasKeyword & 16;
+		$hasVimeo   = $hasKeyword & 8;
+		$hasTiktok  = $hasKeyword & 16;
 		$hasTwitter = $hasKeyword & 32;
 		$hasCodepen = $hasKeyword & 64;
 		$hasWpvideo = $hasKeyword & 128;
@@ -640,7 +640,7 @@ EOD;
 		//$html = \FFI::string( $GLOBALS['ffi']->md4c_toHtml($modContent) );
 		$html = \FFI::string( \Saaze\Config::$H['global_ffi']->md4c_toHtml($modContent) );
 		if ($entry->data) {
-			$entry->data['excerpt'] = $this->getExcerpt($html,$entry);
+			$entry->data['excerpt'] ??= $this->getExcerpt($html,$entry);	// do not overwrite excerpt, if user already provided it
 			if ($hasGallery) {
 				$entry->data['gallery_css'] = $this->cssGallery;
 				$entry->data['gallery_js'] = $this->jsGallery;

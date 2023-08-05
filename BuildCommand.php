@@ -36,7 +36,7 @@ class BuildCommand {
 		$entryCount      = 0;
 
 		foreach ($collections as $collection) {
-			$entries    = $collection->getEntries();
+			$entries    = $collection->getEntries();	# finally calls getContentAndExcerpt()
 			$nentries   = count($collection->entriesSansIndex);
 			$entries_per_page = $collection->data['entries_per_page'] ?? \Saaze\Config::$H['global_config_entries_per_page'];
 			$totalPages = ceil($nentries / $entries_per_page);
@@ -107,8 +107,8 @@ class BuildCommand {
 
 		$collection = new Collection(\Saaze\Config::$H['global_path_content'] . "/" . $collectionId . ".yml");
 		$entry = new Entry($singleFile,$collection);
-		$entry->getContentAndExcerpt();	//$entry->getContent();
-		$entry->getUrl();	# must be computed after getContent()
+		$entry->getContentAndExcerpt();
+		$entry->getUrl();	# must be computed after getContentAndExcerpt()
 		if (!$this->buildEntry($collection, $entry, $dest))
 			exit("Cannot create entry\n");
 		if ($extractFile) {	// Idea: excerpt is merged into index either manually or via script

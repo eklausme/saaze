@@ -27,7 +27,7 @@ class TemplateManager {
 		$rbase = $GLOBALS['rbase'] ?? "/";
 
 		ob_start();
-		require \Saaze\Config::$H['global_path_templates'] . '/' . $template . ".php";
+		require \Saaze\Config::$H['global_path_templates'] . DIRECTORY_SEPARATOR . $template . ".php";
 		$buf = ob_get_contents();
 		ob_end_clean();
 		return $buf;
@@ -52,7 +52,7 @@ class TemplateManager {
 		$rbase = $GLOBALS['rbase'] ?? "/";
 
 		ob_start();
-		require \Saaze\Config::$H['global_path_templates'] . "/" . $template . ".php";
+		require \Saaze\Config::$H['global_path_templates'] . DIRECTORY_SEPARATOR . $template . '.php';
 		$buf = ob_get_contents();
 		ob_end_clean();
 		return $buf;
@@ -66,7 +66,7 @@ class TemplateManager {
 		$rbase = $GLOBALS['rbase'] ?? "/";
 
 		ob_start();
-		require \Saaze\Config::$H['global_path_templates'] . "/" . $template . ".php";
+		require \Saaze\Config::$H['global_path_templates'] . DIRECTORY_SEPARATOR . $template . '.php';
 		$buf = ob_get_contents();
 		ob_end_clean();
 		return $buf;
