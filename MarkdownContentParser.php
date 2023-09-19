@@ -636,9 +636,15 @@ EOD;
 		$t1 = microtime(true);
 		$GLOBALS['MathParser'] += $t1 - $t0;
 		$GLOBALS['MathParserNcall'] += 1;
-		//$html = parent::toHtml($modConent);	// markdown to HTML
-		//$html = \FFI::string( $GLOBALS['ffi']->md4c_toHtml($modContent) );
-		$html = \FFI::string( \Saaze\Config::$H['global_ffi']->md4c_toHtml($modContent) );
+		$html = \FFI::string( \Saaze\Config::$H['global_ffi']->md4c_toHtml($modContent) );	// Markdown to HTML conversion
+		/* * * More efficient to do it in template PHP files
+		if (isset(\Saaze\Config::$H['global_markdown_with_php'])) {	// run PHP over generated HTML
+			ob_start();
+			require 'data:text/plain;base64,'.base64_encode($html);
+			$html = ob_get_contents();
+			ob_end_clean();
+		}
+		* * */
 		if ($entry->data) {
 			$entry->data['excerpt'] ??= $this->getExcerpt($html,$entry);	// do not overwrite excerpt, if user already provided it
 			if ($hasGallery) {

@@ -60,11 +60,11 @@ class Saaze {
 
 		// Below code is required so that rbase works correctly in dynamic mode
 		// Emulate what Hiawatha web-server does on its own
-		if (substr($_SERVER['REQUEST_URI'],-1) !== '/') {
-			header('Location: ' . $_SERVER['REQUEST_URI'] . '/'); // Redirect browser to same URL with slash added at end
-			if ($this->dbgPrt) file_put_contents($this->dbgFile,"\nRedireccting: REQUEST_URI=|{$_SERVER['REQUEST_URI']}|, QUERY_STRING=|".($_SERVER['QUERY_STRING']??"(null)")."|\n",FILE_APPEND);
-			return true;
-		}
+		//if (substr($_SERVER['REQUEST_URI'],-1) !== '/') {
+		//	header('Location: ' . $_SERVER['REQUEST_URI'] . '/'); // Redirect browser to same URL with slash added at end
+		//	if ($this->dbgPrt) file_put_contents($this->dbgFile,"\nRedireccting: REQUEST_URI=|{$_SERVER['REQUEST_URI']}|, QUERY_STRING=|".($_SERVER['QUERY_STRING']??"(null)")."|\n",FILE_APPEND);
+		//	return true;
+		//}
 
 		// REQUEST_URI is the original URL typed by the end-user.
 		// QUERY_STRING can be either empty, or is the string resulting from any rewriting-rules within the web-server.

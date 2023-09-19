@@ -181,7 +181,7 @@ class BuildCommand {
 		if (!$collection->data['entry_route']) return false;
 
 		$indexSpecial = 0;
-		$entryDir = "{$dest}/" . ltrim($collection->data['entry_route'], '/');
+		$entryDir = $dest . DIRECTORY_SEPARATOR . ltrim($collection->data['entry_route'], '/');
 		$entryDir = str_replace('{slug}', $entry->slug(), $entryDir);
 
 		if (substr($entry->filePath,-9) === DIRECTORY_SEPARATOR . 'index.md') {	// 9=strlen('/index.md')
@@ -200,7 +200,7 @@ class BuildCommand {
 			$entryDir .= '.html';	// ugly entries are {slug}.html
 		} else {	// non-ugly entries are in {slug}/index.html
 			if (!is_dir($entryDir)) mkdir($entryDir, 0777, true);
-			$entryDir .= '/index.html';
+			$entryDir .= DIRECTORY_SEPARATOR . 'index.html';
 		}
 		$GLOBALS['fileToRender'] = $entryDir;
 		$GLOBALS['rbase'] = $this->compRbase($entryDir,$this->buildDest);
@@ -236,7 +236,7 @@ class BuildCommand {
 			ksort($this->cat_and_tag[$i]);	// sort keys
 			foreach ($this->cat_and_tag[$i] as $k) sort($k);	// sort values, i.e., pushed values in list
 		}
-		$fname = \Saaze\Config::$H['global_path_content'] . '/' . 'cat_and_tag.json';
+		$fname = \Saaze\Config::$H['global_path_content'] . DIRECTORY_SEPARATOR . 'cat_and_tag.json';
 		file_put_contents($fname, json_encode($this->cat_and_tag,JSON_PRETTY_PRINT));
 	}
 }
