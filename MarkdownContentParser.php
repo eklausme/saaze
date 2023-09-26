@@ -406,8 +406,12 @@ EOD;
 			$mid = trim(substr($content,$start+9,$end-$start-9));	// get rid of spaces at begin+end
 			$midx = strpos($mid,' ');
 			if ($midx === false) break;	// lacking separator between directory & regex
-			$dirWeb = substr($mid,0,$midx);
-			$dir = \Saaze\Config::$H['global_path_public'] . $dirWeb;
+			$dirWeb = $dirWebNoPrefix = $dirWeb1 = substr($mid,0,$midx);
+			if (substr($dirWeb,0,1) === '@') {
+				$dirWebNoPrefix = substr($dirWeb1,1);
+				$dirWeb = (\Saaze\Config::$H['global_rbase'] ?? $GLOBALS['rbase'] ?? "/") . $dirWebNoPrefix;
+			}
+			$dir = \Saaze\Config::$H['global_path_public'] . $dirWebNoPrefix;
 			$regex = substr($mid,$midx+1);
 			if ($i === 0) {
 				$this->cssGallery = "\n<style>\n";

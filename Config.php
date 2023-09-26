@@ -17,7 +17,7 @@ class Config {	// Global config variables for Simplified Saaze
 		}
 
 		self::$H = array(
-			'global_rbase'          => "",
+			'global_rbase'          => Config::getenv2('RBASE'),
 			'global_path_base'      => SAAZE_PATH,
 			'global_path_content'   => SAAZE_PATH . '/' . (Config::getenv2('CONTENT_PATH')   ?? 'content'),
 			'global_path_public'    => SAAZE_PATH . '/' . (Config::getenv2('PUBLIC_PATH')    ?? 'public'),
