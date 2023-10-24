@@ -81,7 +81,7 @@ class SaazeCli {
 			}
 			if (isset($options['t'])) $tags = true;
 			if (isset($options['v'])) {
-				printf("Version 1.32, 26-Sep-2023, written by Elmar Klausmeier\n");
+				printf("Version 1.33, 17-Oct-2023, written by Elmar Klausmeier\n");
 				return;
 			}
 		}

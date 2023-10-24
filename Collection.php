@@ -48,18 +48,13 @@ class Collection {
 		if (empty($this->data['sort_field'])) return;
 
 		$field     = $this->data['sort_field'] ?? 'title';
-		$direction = strtolower( $this->data['sort_direction'] ?? 'asc' );
+		$direction = (strtolower( $this->data['sort_direction'] ?? 'asc' ) === 'asc');
 
 		// Unfortunately we cannot use sort() and rsort() as we sort according a special slice in 'entries'-hash
 		usort($this->entriesSansIndex, function ($a, $b) use ($field, $direction) {
-			$aData = $a->data[$field];
-			$bData = $b->data[$field];
-
-			if ($direction === 'asc') {
-				return $aData <=> $bData;
-			}
-
-			return $bData <=> $aData;
+			$aData = ($a->data['pinned'] ?? false) ? $a->data[$field] : "\t" . $a->data[$field];
+			$bData = ($b->data['pinned'] ?? false) ? $b->data[$field] : "\t" . $b->data[$field];
+			return $direction ? ($aData <=> $bData) : ($bData <=> $aData);
 		});
 	}
 
