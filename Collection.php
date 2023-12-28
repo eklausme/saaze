@@ -102,8 +102,8 @@ class Collection {
 		if ($perPage < 1) $perPage = 1;
 
 		$totalPages = ceil($totalEntries / $perPage);
-		$prevPage   = $page > 1 ? $page - 1 : $page;
-		$nextPage   = $page < $totalPages ? $page + 1 : $totalPages;
+		$prevPage   = ($page > 1) ? $page - 1 : $page;
+		$nextPage   = ($page < $totalPages) ? $page + 1 : $totalPages;
 
 		$pageEntries    = [];
 		$pageIndex      = $page - 1;

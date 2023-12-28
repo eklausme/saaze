@@ -72,7 +72,8 @@ char *md4c_toHtml(const char *markdown) {	// return HTML string
 	if (mbuf.asize == 0) membuf_init(&mbuf,16777216);
 
 	mbuf.size = 0;	// prepare for next call
-	ret = md_html(markdown,strlen(markdown),process_output,&mbuf,MD_DIALECT_GITHUB,0);
+	ret = md_html(markdown, strlen(markdown), process_output,
+		&mbuf, MD_DIALECT_GITHUB | MD_FLAG_NOINDENTEDCODEBLOCKS, 0);
 	membuf_append(&mbuf,"\0",1); // make it a null-terminated C string, so PHP can deduce length
 	if (ret < 0) return "<br>- - - Error in Markdown - - -<br>\n";
 

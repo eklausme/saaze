@@ -19,12 +19,15 @@ class Config {	// Global config variables for Simplified Saaze
 		self::$H = array(
 			'global_rbase'          => Config::getenv2('RBASE'),
 			'global_path_base'      => SAAZE_PATH,
-			'global_path_content'   => SAAZE_PATH . '/' . (Config::getenv2('CONTENT_PATH')   ?? 'content'),
-			'global_path_public'    => SAAZE_PATH . '/' . (Config::getenv2('PUBLIC_PATH')    ?? 'public'),
-			'global_path_templates' => SAAZE_PATH . '/' . (Config::getenv2('TEMPLATES_PATH') ?? 'templates'),
+			'global_path_content'   => SAAZE_PATH . DIRECTORY_SEPARATOR . (Config::getenv2('CONTENT_PATH')   ?? 'content'),
+			'global_path_public'    => SAAZE_PATH . DIRECTORY_SEPARATOR . (Config::getenv2('PUBLIC_PATH')    ?? 'public'),
+			'global_path_templates' => SAAZE_PATH . DIRECTORY_SEPARATOR . (Config::getenv2('TEMPLATES_PATH') ?? 'templates'),
 			'global_config_entries_per_page' => (int)(Config::getenv2('ENTRIES_PER_PAGE') ?? 20),
 			'global_excerpt_length' => 300,
-			'global_ffi'            => \FFI::cdef("char *md4c_toHtml(const char*);","/srv/http/php_md4c_toHtml.so"),	// md4c called via PHP-FFI
+			// md4c called via PHP-FFI
+			'global_ffi'            => \FFI::cdef('char *md4c_toHtml(const char*);', SAAZE_PATH . DIRECTORY_SEPARATOR
+				. 'vendor' . DIRECTORY_SEPARATOR . 'eklausme' . DIRECTORY_SEPARATOR . 'saaze'
+				. DIRECTORY_SEPARATOR . 'php_md4c_toHtml.so'),
 		);
 		//printf("Config: H[global_path_public] = %s\n",self::$H['global_path_public']);
 

@@ -24,17 +24,17 @@ Entire code is ca. 1.5kLines of PHP and C code.
 
 ```bash
 wc *.php *.c
-  242   897 10310 BuildCommand.php
+  242   904 10389 BuildCommand.php
    40   111  1117 CollectionArray.php
-  133   492  4351 Collection.php
-   46   206  1827 Config.php
+  128   506  4462 Collection.php
+   49   223  2034 Config.php
    93   400  3698 Entry.php
-  663  2748 25184 MarkdownContentParser.php
+  673  2806 25647 MarkdownContentParser.php
    98   336  3261 SaazeCli.php
-  122   516  6557 Saaze.php
-   86   293  2935 TemplateManager.php
-   82   242  1929 php_md4c_toHtml.c
- 1605  6241 61169 total
+  122   519  6567 Saaze.php
+   86   301  3131 TemplateManager.php
+   83   249  1967 php_md4c_toHtml.c
+ 1614  6355 62273 total
 ```
 
 # Credits
