@@ -1,6 +1,16 @@
 #!/usr/bin/env php
 <?php
 
-require __DIR__ . '/vendor/autoload.php';
+// Composer is very slow, see https://eklausmeier.goip.de/blog/2023/10-29-simplified-saaze-monitored-with-phpspy
+//require __DIR__ . '/vendor/autoload.php';
 
-(new \Saaze\SaazeCli(__DIR__))->run();
+require './vendor/eklausme/saaze/BuildCommand.php';
+require './vendor/eklausme/saaze/CollectionArray.php';
+require './vendor/eklausme/saaze/Collection.php';
+require './vendor/eklausme/saaze/Config.php';
+require './vendor/eklausme/saaze/Entry.php';
+require './vendor/eklausme/saaze/MarkdownContentParser.php';
+require './vendor/eklausme/saaze/SaazeCli.php';
+require './vendor/eklausme/saaze/TemplateManager.php';
+
+(new \Saaze\SaazeCli('.'))->run();

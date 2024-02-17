@@ -33,8 +33,8 @@ wc *.php *.c
    98   336  3261 SaazeCli.php
   122   519  6567 Saaze.php
    86   301  3131 TemplateManager.php
-   83   249  1967 php_md4c_toHtml.c
- 1614  6355 62273 total
+   83   263  2030 php_md4c_toHtml.c
+ 1614  6369 62336 total
 ```
 
 # Credits

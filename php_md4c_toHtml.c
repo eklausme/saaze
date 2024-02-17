@@ -21,8 +21,8 @@
 
 struct membuffer {
 	char* data;
-	size_t asize;
-	size_t size;
+	size_t asize;	// allocated size = max usable size
+	size_t size;	// current size
 };
 
 
@@ -40,7 +40,7 @@ static void membuf_init(struct membuffer* buf, MD_SIZE new_asize) {
 
 static void membuf_grow(struct membuffer* buf, size_t new_asize) {
 	buf->data = realloc(buf->data, new_asize);
-	if(buf->data == NULL) {
+	if (buf->data == NULL) {
 		fprintf(stderr, "membuf_grow: realloc() failed.\n");
 		exit(1);
 	}
@@ -50,7 +50,7 @@ static void membuf_grow(struct membuffer* buf, size_t new_asize) {
 
 
 static void membuf_append(struct membuffer* buf, const char* data, MD_SIZE size) {
-	if(buf->asize < buf->size + size)
+	if (buf->asize < buf->size + size)
 		membuf_grow(buf, buf->size + buf->size / 2 + size);
 	memcpy(buf->data + buf->size, data, size);
 	buf->size += size;
@@ -69,7 +69,7 @@ static struct membuffer mbuf = { NULL, 0, 0 };
 
 char *md4c_toHtml(const char *markdown) {	// return HTML string
 	int ret;
-	if (mbuf.asize == 0) membuf_init(&mbuf,16777216);
+	if (mbuf.asize == 0) membuf_init(&mbuf,16777216);	// =16MB
 
 	mbuf.size = 0;	// prepare for next call
 	ret = md_html(markdown, strlen(markdown), process_output,
