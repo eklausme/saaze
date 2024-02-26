@@ -20,8 +20,7 @@ class Collection {
 	}
 
 	public function parseCollection(string $filePath) : array {
-		//return Yaml::parse(file_get_contents($filePath));
-		$GLOBALS['YamlParserNcall'] += 1;
+		//return Yaml::parse(file_get_contents($filePath));	// slow, therefore replaced with PHP Yaml extension
 		$GLOBALS['parseCollectionNcall'] += 1;
 		if (($yaml = file_get_contents($filePath)) === false) {
 			// From CollectionArray::loadCollections() we know that file exists, but might be unreadable

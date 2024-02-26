@@ -39,11 +39,11 @@ class Entry {	// here we store frontmatter, Markdown, and generated HTML
 				return $data;
 			}
 			// Are we at end or is next character white space?
-			if ( $pos + 3 == $len  ||  ctype_space(substr($content,$pos+3,1)) ) {
-				if ($n3dash == 0  &&  ($pos == 0 || $pos > 0 && substr($content,$pos-1,1)=="\n")) {
+			if ( $pos + 3 === $len  ||  ctype_space(substr($content,$pos+3,1)) ) {
+				if ($n3dash === 0  &&  ($pos === 0 || $pos > 0 && substr($content,$pos-1,1)=="\n")) {
 					$n3dash = 1;	// found first triple dash
 					$pos1 = $pos + 3;
-				} else if ($n3dash == 1  &&  substr($content,$pos-1,1) == "\n") {
+				} else if ($n3dash === 1  &&  substr($content,$pos-1,1) === "\n") {
 					// found 2nd properly enclosed triple dash
 					$n3dash = 2; $pos2 = $pos + 3; break;
 				}
@@ -55,10 +55,10 @@ class Entry {	// here we store frontmatter, Markdown, and generated HTML
 		$data = yaml_parse($matter);	// cuts almost 40% of the runtime, so highly recommended
 		if ($data === false) fprintf(STDERR,"%s: YAML could not be parsed in parseEntry()\n",$filePath);
 
-		$data['content_raw'] = $body;
+		$data['content_raw'] = $body;	// this is the actual Markdown
 
-		$GLOBALS['YamlParser'] += microtime(true) - $t0;
-		$GLOBALS['YamlParserNcall'] += 1;
+		$GLOBALS['parseEntry'] += microtime(true) - $t0;
+		$GLOBALS['parseEntryNcall'] += 1;
 		return $data;
 	}
 

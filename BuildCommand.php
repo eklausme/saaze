@@ -8,7 +8,10 @@ class BuildCommand {
 	protected string $buildDest;	// needed for rbase computation
 	protected CollectionArray $collectionArray;
 	protected TemplateManager $templateManager;
-	private array $cat_and_tag;
+	private array $cat_and_tag;	// array of array for categories and tags
+	private int $pid;	// process id from pcntl_fork()
+	private int $procnr;	// serial process number
+	private int $nprocs;	// number of processes, 1=parent only, 2=parent+child, 3=parent+2children, ...
 
 
 	public function __construct(CollectionArray $collectionArray, TemplateManager $templateManager) {
@@ -17,7 +20,7 @@ class BuildCommand {
 		$this->cat_and_tag = [ 'categories' => array(), 'tags' => array() ];
 	}
 
-	public function buildAllStatic(string $dest, bool $tags, bool $rssXmlFeed, bool $sitemap, bool $overview) : void {
+	public function buildAllStatic(string $dest, bool $tags, bool $rssXmlFeed, bool $sitemap, bool $overview, int $aprocs) : void {
 		$t0 = microtime(true);
 
 		if (strpos($dest, '/') !== 0)	// Does not start with '/'?
@@ -36,46 +39,79 @@ class BuildCommand {
 		$entryCount      = 0;
 
 		foreach ($collections as $collection) {
-			$entries    = $collection->getEntries();	# finally calls getContentAndExcerpt()
-			$nentries   = count($collection->entriesSansIndex);
+			$entries    = $collection->getEntries();	# finally calls getContentAndExcerpt() and sorts
+			$nentries   = count($entries);
+			$nSIentries = count($collection->entriesSansIndex);
 			$entries_per_page = $collection->data['entries_per_page'] ?? \Saaze\Config::$H['global_config_entries_per_page'];
-			$totalPages = ceil($nentries / $entries_per_page);
-			printf("\texecute(): filePath=%s, nentries=%d, totalPages=%d, entries_per_page=%d\n",$collection->filePath,$nentries,$totalPages,$entries_per_page);
+			$totalPages = ceil($nSIentries / $entries_per_page);
+			printf("\texecute(): filePath=%s, nSIentries=%d, totalPages=%d, entries_per_page=%d\n",$collection->filePath,$nSIentries,$totalPages,$entries_per_page);
+
+			$this->beginParallel($nentries,$aprocs);
+			$i = 0;
+			foreach ($entries as $entry) {
+				if ($this->nprocs > 0  &&  ($i++ % $this->nprocs) != $this->procnr) continue;	// distribute work among nprocs processes
+				if ($entry->data['entry'] ?? true) {
+					$this->buildEntry($collection, $entry, $dest);
+					$entryCount++;
+				}
+			}
+			$this->endParallel();
+
+			if ($tags) {	// populate cat_and_tag[][] array
+				foreach ($entries as $entry) {
+					if ($entry->data['entry'] ?? true)
+						$this->build_cat_and_tag($entry,$collection->draftOverride);
+				}
+			}
 
 			++$totalCollection;
 			if ($this->buildCollectionIndex($collection, 0, $dest)) $collectionCount++;
 
 			for ($page=1; $page <= $totalPages; $page++)
 				$this->buildCollectionIndex($collection, $page, $dest);
-
-			foreach ($entries as $entry) {
-				if ($entry->data['entry'] ?? true) {
-					if ($this->buildEntry($collection, $entry, $dest)) $entryCount++;
-					if ($tags) $this->build_cat_and_tag($entry,$collection->draftOverride);
-				}
-			}
 		}
 		if ($tags) $this->save_cat_and_tag();
 		if ($rssXmlFeed)
-			file_put_contents($dest.'/feed.xml', $this->templateManager->renderGeneral($collections,'rss'));
+			file_put_contents($dest. DIRECTORY_SEPARATOR . 'feed.xml', $this->templateManager->renderGeneral($collections,'rss'));
 		if ($sitemap)
-			file_put_contents($dest.'/sitemap.xml', $this->templateManager->renderGeneral($collections,'sitemap'));
+			file_put_contents($dest. DIRECTORY_SEPARATOR . 'sitemap.xml', $this->templateManager->renderGeneral($collections,'sitemap'));
 		if ($overview)
-			file_put_contents($dest.'/sitemap.html', $this->templateManager->renderGeneral($collections,'overview'));
+			file_put_contents($dest. DIRECTORY_SEPARATOR . 'sitemap.html', $this->templateManager->renderGeneral($collections,'overview'));
 
 		$elapsedTime = microtime(true) - $t0;
 		$timeString  = number_format($elapsedTime, 2) . ' secs';
 		$memString   = $this->humanSize(memory_get_peak_usage());
 
 		echo("Finished creating {$totalCollection} collections, {$collectionCount} with index, and {$entryCount} entries ({$timeString} / {$memString})\n");
-		printf("#collections=%d, YamlParser=%.4f/%d-%d, md2html=%.4f, MathParser=%.4f/%d, renderEntry=%d, content=%d/%d, excerpt=%d/%d\n",
+		printf("#collections=%d, parseEntry=%.4f/%d-%d, md2html=%.4f, MathParser=%.4f/%d, renderEntry=%.4f/%d, renderCollection=%.4f/%d, content=%d/%d, excerpt=%d/%d\n",
 			$ncollections,
-			$GLOBALS['YamlParser'], $GLOBALS['YamlParserNcall'], $GLOBALS['parseCollectionNcall'],
+			$GLOBALS['parseEntry'], $GLOBALS['parseEntryNcall'], $GLOBALS['parseCollectionNcall'],
 			$GLOBALS['md2html'],
 			$GLOBALS['MathParser'], $GLOBALS['MathParserNcall'],
-			$GLOBALS['renderEntry'],
+			$GLOBALS['renderEntry'], $GLOBALS['renderEntryNcall'],
+			$GLOBALS['renderCollection'], $GLOBALS['renderCollectionNcall'],
 			$GLOBALS['content'], $GLOBALS['contentCached'],
 			$GLOBALS['excerpt'], $GLOBALS['excerptCached']);
+	}
+
+	protected function beginParallel(int $nentries, int $aprocs) : void {
+		$this->pid = 0;
+		$this->procnr = 0;
+		$this->nprocs = 1;
+		if ($nentries < 128) return;	// too few entries to warrant forking
+		$this->nprocs = $aprocs;	// aprocs = allowed procs, specified on commmand-line
+		for ($this->procnr=0; $this->procnr<$this->nprocs; ++$this->procnr) {
+			if (($this->pid = pcntl_fork())) {
+				printf("\tnentries=%d, procnr=%02d, pid=%d\n",$nentries,$this->procnr,$this->pid);
+				return;	// child returns to work
+			}
+		}
+	}
+	protected function endParallel() : void {
+		if ($this->pid) exit(0);	// exit child process; pid=0 is parent
+		//$status = 0;
+		//while (pcntl_wait($status) > 0)
+		//	;
 	}
 
 	// Build HTML and excerpt for one single Markdown file given on the command-line
@@ -125,8 +161,8 @@ class BuildCommand {
 		$memString   = $this->humanSize(memory_get_peak_usage());
 
 		echo("Finished creating entry ({$timeString} / {$memString})\n");
-		printf("YamlParser=%.4f/%d-%d, md2html=%.4f, MathParser=%.4f/%d, renderEntry=%d, content=%d/%d, excerpt=%d/%d\n",
-			$GLOBALS['YamlParser'], $GLOBALS['YamlParserNcall'], $GLOBALS['parseCollectionNcall'],
+		printf("parseEntry=%.4f/%d-%d, md2html=%.4f, MathParser=%.4f/%d, renderEntry=%d, content=%d/%d, excerpt=%d/%d\n",
+			$GLOBALS['parseEntry'], $GLOBALS['parseEntryNcall'], $GLOBALS['parseCollectionNcall'],
 			$GLOBALS['md2html'],
 			$GLOBALS['MathParser'], $GLOBALS['MathParserNcall'],
 			$GLOBALS['renderEntry'],
@@ -177,8 +213,11 @@ class BuildCommand {
 		return true;
 	}
 
-	private function buildEntry(Collection $collection, Entry $entry, string $dest) : bool {
-		if (!$collection->data['entry_route']) return false;
+	private function buildEntry(Collection $collection, Entry $entry, string $dest) : void {
+		if (!$collection->data['entry_route']) {
+			fprintf(STDERR,"%s: buildEntry() found no 'entry_route' in data[]\n",$collection->filePath);
+			return;
+		}
 
 		$indexSpecial = 0;
 		$entryDir = $dest . DIRECTORY_SEPARATOR . ltrim($collection->data['entry_route'], '/');
@@ -204,9 +243,8 @@ class BuildCommand {
 		}
 		$GLOBALS['fileToRender'] = $entryDir;
 		$GLOBALS['rbase'] = $this->compRbase($entryDir,$this->buildDest);
-		file_put_contents($entryDir, $this->templateManager->renderEntry($entry));
-
-		return true;
+		if (file_put_contents($entryDir, $this->templateManager->renderEntry($entry)) === false)
+			fprintf(STDERR,"%s: buildEntry() could not write to\n",$entryDir);
 	}
 
 	private function humanSize(int $bytes) : string {
@@ -215,7 +253,7 @@ class BuildCommand {
 	}
 
 	private function build_cat_and_tag(Entry $entry, bool $draftOverride) : void {
-		if ($draftOverride == false && array_key_exists('draft',$entry->data) && $entry->data['draft']) return;
+		if ($draftOverride === false && array_key_exists('draft',$entry->data) && $entry->data['draft']) return;
 		$prefix = '../..';
 		foreach (array('categories','tags') as $i) {
 			if (!array_key_exists($i,$entry->data)) continue;

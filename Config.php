@@ -25,9 +25,9 @@ class Config {	// Global config variables for Simplified Saaze
 			'global_config_entries_per_page' => (int)(Config::getenv2('ENTRIES_PER_PAGE') ?? 20),
 			'global_excerpt_length' => 300,
 			// md4c called via PHP-FFI
-			'global_ffi'            => \FFI::cdef('char *md4c_toHtml(const char*);', SAAZE_PATH . DIRECTORY_SEPARATOR
-				. 'vendor' . DIRECTORY_SEPARATOR . 'eklausme' . DIRECTORY_SEPARATOR . 'saaze'
-				. DIRECTORY_SEPARATOR . 'php_md4c_toHtml.so'),
+			//'global_ffi'            => \FFI::cdef('char *md4c_toHtml(const char*);', SAAZE_PATH . DIRECTORY_SEPARATOR
+			//	. 'vendor' . DIRECTORY_SEPARATOR . 'eklausme' . DIRECTORY_SEPARATOR . 'saaze'
+			//	. DIRECTORY_SEPARATOR . 'php_md4c_toHtml.so'),
 		);
 		//printf("Config: H[global_path_public] = %s\n",self::$H['global_path_public']);
 
@@ -36,9 +36,12 @@ class Config {	// Global config variables for Simplified Saaze
 		$GLOBALS['contentCached'] = 0;
 		$GLOBALS['excerpt'] = 0;
 		$GLOBALS['excerptCached'] = 0;
+		$GLOBALS['renderCollection'] = 0;
+		$GLOBALS['renderCollectionNcall'] = 0;
 		$GLOBALS['renderEntry'] = 0;
-		$GLOBALS['YamlParser'] = 0;	// time spent in YAML parsing in routine parseEntry()
-		$GLOBALS['YamlParserNcall'] = 0;	// number of calls to yaml_parse()
+		$GLOBALS['renderEntryNcall'] = 0;
+		$GLOBALS['parseEntry'] = 0;	// time spent in routine parseEntry()
+		$GLOBALS['parseEntryNcall'] = 0;	// number of calls to parseEntry() = yaml_parse()
 		$GLOBALS['parseCollectionNcall'] = 0;
 		$GLOBALS['MathParser'] = 0;	// time spent in MathParser
 		$GLOBALS['MathParserNcall'] = 0;	// number of calls

@@ -10,6 +10,8 @@ class TemplateManager {
 
 
 	public function renderCollection(Collection $collection, int|string $page) : string {
+		$t0 = microtime(true);
+		$GLOBALS['renderCollectionNcall'] += 1;
 		$template = 'index';	//'collection';
 		if ($this->templateExists($collection->slug . '/index')) {
 			$template = $collection->slug . '/index';
@@ -30,12 +32,14 @@ class TemplateManager {
 		require \Saaze\Config::$H['global_path_templates'] . DIRECTORY_SEPARATOR . $template . ".php";
 		$buf = ob_get_contents();
 		ob_end_clean();
+		$GLOBALS['renderCollection'] += microtime(true) - $t0;
 		return $buf;
 	}
 
 
 	public function renderEntry(Entry $entry) : string {
-		$GLOBALS['renderEntry'] += 1;
+		$t0 = microtime(true);
+		$GLOBALS['renderEntryNcall'] += 1;
 		$entryData = $entry->data;
 		$template  = 'entry';
 
@@ -55,11 +59,14 @@ class TemplateManager {
 		require \Saaze\Config::$H['global_path_templates'] . DIRECTORY_SEPARATOR . $template . '.php';
 		$buf = ob_get_contents();
 		ob_end_clean();
+		$GLOBALS['renderEntry'] += microtime(true) - $t0;
 		return $buf;
 	}
 
 
 	public function renderError(string $message, int $code) : string {
+		$url = 'error';	// not sure, whether it is good idea to set this variable here
+		$title = 'Error';
 		$template = 'error';
 		if ($this->templateExists("error{$code}")) $template = "error{$code}";
 		if (!$this->templateExists($template)) return "{$code} {$message}";

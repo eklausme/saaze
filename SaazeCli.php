@@ -50,8 +50,9 @@ class SaazeCli {
 		$sitemap = false;
 		$overview = false;
 		$rssXmlFeed = false;
+		$aprocs = 0;	// default is: do not fork, i.e., only one process, no child
 
-		$options = getopt("b:efhmors:tv");
+		$options = getopt("b:efhmop:rs:tv");
 		//var_dump($options);
 		if (count($options) > 0) {
 			if (isset($options['b']) && strlen($options['b']) > 0 && $options['b'] !== "/") {
@@ -67,6 +68,7 @@ class SaazeCli {
 					."\t-h            this help message\n"
 					."\t-m            generate XML sitemap\n"
 					."\t-o            generate HTML overview\n"
+					."\t-p <aproc>    number of allowed processes\n"
 					."\t-r            generate RSS feed\n"
 					."\t-s <file>     only generate static content for single file\n"
 					."\t-t            generate categories and tags\n"
@@ -75,13 +77,16 @@ class SaazeCli {
 			}
 			if (isset($options['m'])) $sitemap = true;
 			if (isset($options['o'])) $overview = true;
+			if (isset($options['p']) && strlen($options['p']) > 0 && $options['p'] !== "0") {
+				$aprocs = max(0, ((int)$options['p']) - 1);	// allowed number of processes
+			}
 			if (isset($options['r'])) $rssXmlFeed = true;
 			if (isset($options['s']) && strlen($options['s']) > 0 && $options['s'] !== "/") {
 				$singleFile = $options['s'];
 			}
 			if (isset($options['t'])) $tags = true;
 			if (isset($options['v'])) {
-				printf("Version 1.35, 17-Feb-2024, written by Elmar Klausmeier\n");
+				printf("Version 2.0, 25-Feb-2024, written by Elmar Klausmeier\n");
 				return;
 			}
 		}
@@ -90,7 +95,7 @@ class SaazeCli {
 		$templateManager = new TemplateManager();
 		$buildMgr = new BuildCommand($collectionArray,$templateManager);
 
-		if (is_null($singleFile)) $buildMgr->buildAllStatic($buildDest,$tags,$rssXmlFeed,$sitemap,$overview);
+		if (is_null($singleFile)) $buildMgr->buildAllStatic($buildDest,$tags,$rssXmlFeed,$sitemap,$overview,$aprocs);
 		else $buildMgr->buildSingleStatic($buildDest,$singleFile,$extractFile);
 
 		//$this->stopXhprof();

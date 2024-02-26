@@ -640,7 +640,8 @@ EOD;
 		$t1 = microtime(true);
 		$GLOBALS['MathParser'] += $t1 - $t0;
 		$GLOBALS['MathParserNcall'] += 1;
-		$html = \FFI::string( \Saaze\Config::$H['global_ffi']->md4c_toHtml($modContent) );	// Markdown to HTML conversion
+		//$html = \FFI::string( \Saaze\Config::$H['global_ffi']->md4c_toHtml($modContent) );	// Markdown to HTML conversion
+		$html = md4c_toHtml($modContent);	// Markdown to HTML conversion with MD4C PHP extension
 		/* * * More efficient to do it in template PHP files
 		if (isset(\Saaze\Config::$H['global_markdown_with_php'])) {	// run PHP over generated HTML
 			ob_start();
