@@ -46,29 +46,33 @@ class BuildCommand {
 			$totalPages = ceil($nSIentries / $entries_per_page);
 			printf("\texecute(): filePath=%s, nSIentries=%d, totalPages=%d, entries_per_page=%d\n",$collection->filePath,$nSIentries,$totalPages,$entries_per_page);
 
-			$this->beginParallel($nentries,$aprocs);
-			$i = 0;
-			foreach ($entries as $entry) {
-				if ($this->nprocs > 0  &&  ($i++ % $this->nprocs) != $this->procnr) continue;	// distribute work among nprocs processes
-				if ($entry->data['entry'] ?? true) {
-					$this->buildEntry($collection, $entry, $dest);
-					$entryCount++;
-				}
-			}
-			$this->endParallel();
-
-			if ($tags) {	// populate cat_and_tag[][] array
+			if (array_key_exists('entry_route',$collection->data) && ($collection->data['entry']??true)) {	// only produce individual entries if entry_route is set and entry===true
+				$this->beginParallel($nentries,$aprocs);
+				$i = 0;
 				foreach ($entries as $entry) {
-					if ($entry->data['entry'] ?? true)
-						$this->build_cat_and_tag($entry,$collection->draftOverride);
+					if ($this->nprocs > 0  &&  ($i++ % $this->nprocs) != $this->procnr) continue;	// distribute work among nprocs processes
+					if ($entry->data['entry'] ?? true) {
+						$this->buildEntry($collection, $entry, $dest);
+						$entryCount++;
+					}
+				}
+				$this->endParallel();
+
+				if ($tags) {	// populate cat_and_tag[][] array
+					foreach ($entries as $entry) {
+						if ($entry->data['entry'] ?? true)
+							$this->build_cat_and_tag($entry,$collection->draftOverride);
+					}
 				}
 			}
 
 			++$totalCollection;
-			if ($this->buildCollectionIndex($collection, 0, $dest)) $collectionCount++;
-
-			for ($page=1; $page <= $totalPages; $page++)
-				$this->buildCollectionIndex($collection, $page, $dest);
+			if (array_key_exists('index_route',$collection->data) && ($collection->data['index']??true)) {	// no index_route means no index
+				$collectionCount++;
+				//if ($this->buildCollectionIndex($collection, 0, $dest)) $collectionCount++;
+				for ($page=0; $page <= $totalPages; $page++)
+					$this->buildCollectionIndex($collection, $page, $dest);
+			}
 		}
 		if ($tags) $this->save_cat_and_tag();
 		if ($rssXmlFeed)
@@ -145,8 +149,7 @@ class BuildCommand {
 		$entry = new Entry($singleFile,$collection);
 		$entry->getContentAndExcerpt();
 		$entry->getUrl();	# must be computed after getContentAndExcerpt()
-		if (!$this->buildEntry($collection, $entry, $dest))
-			exit("Cannot create entry\n");
+		$this->buildEntry($collection, $entry, $dest);	// exit("Cannot create entry\n");
 		if ($extractFile) {	// Idea: excerpt is merged into index either manually or via script
 			//$entry->getExcerpt();
 			file_put_contents("excerpt.txt",sprintf("title:\t<a href=\"%s%s>%s</a>\ndate:\t%s\n\n%s\n",
@@ -191,10 +194,7 @@ class BuildCommand {
 		return rtrim(str_repeat("../",$cnt),"/");
 	}
 
-	private function buildCollectionIndex(Collection $collection, int $page, string $dest) : bool {
-		if (!array_key_exists('index_route',$collection->data))	// no index_route means no index
-			return false;
-
+	private function buildCollectionIndex(Collection $collection, int $page, string $dest) : void {
 		$collectionDir = $dest;
 
 		if ($collection->data['index_route'] !== '/')
@@ -209,8 +209,6 @@ class BuildCommand {
 		$GLOBALS['fileToRender'] = $collectionDir;
 		$GLOBALS['rbase'] = $this->compRbase($collectionDir,$this->buildDest);
 		file_put_contents($collectionDir, $this->templateManager->renderCollection($collection, $page));
-
-		return true;
 	}
 
 	private function buildEntry(Collection $collection, Entry $entry, string $dest) : void {
@@ -253,7 +251,8 @@ class BuildCommand {
 	}
 
 	private function build_cat_and_tag(Entry $entry, bool $draftOverride) : void {
-		if ($draftOverride === false && array_key_exists('draft',$entry->data) && $entry->data['draft']) return;
+		//if ($draftOverride === false && array_key_exists('draft',$entry->data) && $entry->data['draft']) return;
+		if ($draftOverride === false && ($entry->data['draft'] ?? $entry->collection->data['draft'] ?? false)) return;
 		$prefix = '../..';
 		foreach (array('categories','tags') as $i) {
 			if (!array_key_exists($i,$entry->data)) continue;

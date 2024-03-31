@@ -268,7 +268,7 @@ EOD;
 
 
 	/**
-	 * Convert [vimeo]xxx[/vimeo] tags in your markdown to HTML:
+	 * Convert [vimeo]126529871[/vimeo] tags in your markdown to HTML:
 	 * <iframe src="https://player.vimeo.com/video/126529871" width="640" height="360"
 	 *     frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
 	 * Example: [vimeo] 126529871 [/vimeo]

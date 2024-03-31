@@ -51,7 +51,7 @@ class TemplateManager {
 		}
 
 		$url = $entryData['url'];
-		$title = $entryData['title'];
+		$title = $entryData['title'] ?? null;
 		$entry = $entryData;	// make some elements invisible in template
 		$rbase = \Saaze\Config::$H['global_rbase'] ?? $GLOBALS['rbase'] ?? "/";
 

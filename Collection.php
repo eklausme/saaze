@@ -10,6 +10,7 @@ class Collection {
 	public bool $draftOverride;
 	public array $entries = [];	// all entries for this collection
 	public array $entriesSansIndex = [];	// all entries for this collection WITHOUT index.md, if any
+	public bool $filter;
 
 
 	public function __construct(string $filePath, bool $draft = true) {
@@ -17,6 +18,7 @@ class Collection {
 		$this->slug = basename($this->filePath, '.yml');	// used to find corresponding template
 		$this->data = $this->parseCollection($this->filePath);
 		$this->draftOverride = $draft;
+		$this->filter = false;
 	}
 
 	public function parseCollection(string $filePath) : array {
@@ -35,6 +37,8 @@ class Collection {
 	public function getEntries() : array|null {
 		$this->entries = [];	// clear all entries in EntryArray
 		$this->entriesSansIndex = [];
+
+		if (!empty($this->data['filter'])) $this->filter = true;
 		$this->loadEntries();
 		if (empty($this->entries)) return null;
 
@@ -58,7 +62,7 @@ class Collection {
 	}
 
 	protected function loadEntries() : array {
-		$collectionDir = \Saaze\Config::$H['global_path_content'] . '/' . $this->slug;
+		$collectionDir = \Saaze\Config::$H['global_path_content'] . DIRECTORY_SEPARATOR . $this->slug;
 		if (!is_dir($collectionDir)) return [];
 
 		$this->loadMkdwnRecursive($collectionDir);
@@ -81,7 +85,7 @@ class Collection {
 	protected function loadEntry(string $filePath) : void {
 		$entry = new Entry($filePath,$this);
 		if (!isset($entry->data)) return;
-		if ($this->draftOverride === false  &&  ($entry->data['draft'] ?? false))
+		if ($this->draftOverride === false  &&  ($entry->data['draft'] ?? $this->data['draft'] ?? false))
 			return;
 
 		$this->entries[$entry->slug()] = $entry;
@@ -90,7 +94,8 @@ class Collection {
 		$entry->getUrl();	# must be computed after getContentAndExcerpt()
 		//$entry->getExcerpt();
 
-		if (substr($entry->filePath,-9) !== '/index.md' && ($entry->data['index'] ?? true))
+		if (substr($entry->filePath,-9) !== '/index.md' && ($entry->data['index'] ?? $this->data['index'] ?? true)
+		&& (!$this->filter || eval($this->data['filter'])))
 			$this->entriesSansIndex[] = $entry;
 	}
 

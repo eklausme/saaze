@@ -18,9 +18,10 @@ class CollectionArray {
 		return $this->collections;
 	}
 
-	protected function sortCollections() : void {
+	protected function sortCollections() : void {	// sort collections[] descending on 'entry_route', if available
 		uasort($this->collections, function ($a, $b) {
-			return count(explode('/', $b->data['entry_route'])) <=> count(explode('/', $a->data['entry_route']));
+			//return count(explode('/', $b->data['entry_route'])) <=> count(explode('/', $a->data['entry_route']));
+			return ($b->data['entry_route'] ?? NULL) <=> ($a->data['entry_route'] ?? NULL);
 		});
 	}
 

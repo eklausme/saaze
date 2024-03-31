@@ -84,17 +84,18 @@ class Saaze {
 			$page = null;
 			if (str_starts_with($request_uri,$entryStart)) {
 				// Here we would have to add the uglyURL case, if needed
-				$singleFile = \Saaze\Config::$H['global_path_content'] . '/' . $collection->slug . substr($request_uri,strlen($entryStart)) . '.md';
+				$singleFile = \Saaze\Config::$H['global_path_content'] . DIRECTORY_SEPARATOR . $collection->slug . substr($request_uri,strlen($entryStart)) . '.md';
 				if ($this->dbgPrt) file_put_contents($this->dbgFile,"collection->slug=|{$collection->slug}|, singleFile1=|{$singleFile}|\n",FILE_APPEND);
 				$entry = new Entry($singleFile,$collection);
 				if (isset($entry->data)) goto entryCase;
 				// Special case for index.md
-				$singleFile = \Saaze\Config::$H['global_path_content'] . '/' . $collection->slug . substr($request_uri,strlen($entryStart)) . '/index.md';
+				$singleFile = \Saaze\Config::$H['global_path_content'] . DIRECTORY_SEPARATOR . $collection->slug . substr($request_uri,strlen($entryStart)) . '/index.md';
 				if ($this->dbgPrt) file_put_contents($this->dbgFile,"collection->slug=|{$collection->slug}|, singleFile2=|{$singleFile}|\n",FILE_APPEND);
 				$entry = new Entry($singleFile,$collection);
 				if (!isset($entry->data)) goto indexCase;
 				entryCase: // process entry case
-				if (($entry->data['draft'] ?? false) || !($entry->data['entry'] ?? true)) break;
+				if (($entry->data['draft'] ?? $collection->data['draft'] ?? false)
+				|| !($entry->data['entry'] ?? $collection->data['entry'] ?? true)) continue;
 				if ($this->dbgPrt) file_put_contents($this->dbgFile,"collection->slug=|{$collection->slug}|, 200\n",FILE_APPEND);
 				$entry->getContentAndExcerpt();	//$entry->getContent();
 				$entry->getUrl();
@@ -102,7 +103,7 @@ class Saaze {
 				return true;
 			}
 			indexCase:	// process index case
-			if (!array_key_exists('index_route',$collection->data)) continue;	// no index_route means no index
+			if (!array_key_exists('index_route',$collection->data) || !($collection->data['index']??true)) continue;	// no index_route or index=false means no index
 			$indexStart = rtrim($collection->data['index_route'],'/');
 			$indexStartLen = strlen($indexStart);
 			if ($this->dbgPrt) file_put_contents($this->dbgFile,"indexStart=|{$indexStart}|, indexStartLen={$indexStartLen},\n",FILE_APPEND);
