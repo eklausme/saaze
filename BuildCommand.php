@@ -87,15 +87,14 @@ class BuildCommand {
 		$memString   = $this->humanSize(memory_get_peak_usage());
 
 		echo("Finished creating {$totalCollection} collections, {$collectionCount} with index, and {$entryCount} entries ({$timeString} / {$memString})\n");
-		printf("#collections=%d, parseEntry=%.4f/%d-%d, md2html=%.4f, MathParser=%.4f/%d, renderEntry=%.4f/%d, renderCollection=%.4f/%d, content=%d/%d, excerpt=%d/%d\n",
+		printf("#collections=%d, parseEntry=%.4f/%d-%d, md2html=%.4f, toHtml=%.4f/%d, renderEntry=%.4f/%d, renderCollection=%.4f/%d, content=%d/%d\n",
 			$ncollections,
 			$GLOBALS['parseEntry'], $GLOBALS['parseEntryNcall'], $GLOBALS['parseCollectionNcall'],
 			$GLOBALS['md2html'],
-			$GLOBALS['MathParser'], $GLOBALS['MathParserNcall'],
+			$GLOBALS['toHtml'], $GLOBALS['toHtmlNcall'],
 			$GLOBALS['renderEntry'], $GLOBALS['renderEntryNcall'],
 			$GLOBALS['renderCollection'], $GLOBALS['renderCollectionNcall'],
-			$GLOBALS['content'], $GLOBALS['contentCached'],
-			$GLOBALS['excerpt'], $GLOBALS['excerptCached']);
+			$GLOBALS['content'], $GLOBALS['contentCached']);
 	}
 
 	protected function beginParallel(int $nentries, int $aprocs) : void {
@@ -164,13 +163,12 @@ class BuildCommand {
 		$memString   = $this->humanSize(memory_get_peak_usage());
 
 		echo("Finished creating entry ({$timeString} / {$memString})\n");
-		printf("parseEntry=%.4f/%d-%d, md2html=%.4f, MathParser=%.4f/%d, renderEntry=%d, content=%d/%d, excerpt=%d/%d\n",
+		printf("parseEntry=%.4f/%d-%d, md2html=%.4f, toHtml=%.4f/%d, renderEntry=%d, content=%d/%d\n",
 			$GLOBALS['parseEntry'], $GLOBALS['parseEntryNcall'], $GLOBALS['parseCollectionNcall'],
 			$GLOBALS['md2html'],
-			$GLOBALS['MathParser'], $GLOBALS['MathParserNcall'],
+			$GLOBALS['toHtml'], $GLOBALS['toHtmlNcall'],
 			$GLOBALS['renderEntry'],
-			$GLOBALS['content'], $GLOBALS['contentCached'],
-			$GLOBALS['excerpt'], $GLOBALS['excerptCached']);
+			$GLOBALS['content'], $GLOBALS['contentCached']);
 	}
 
 	private function clearBuildDirectory(string $dest) : void {

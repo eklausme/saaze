@@ -480,7 +480,7 @@ EOD;
 	 * Simply drop [more_WP_Tag], the WordPress <!--more--> tag
 	 */
 	private function moreTag(string $content) : string {
-		return str_replace("[more_WP_Tag]","",$content);
+		return str_replace("[more_WP_Tag]","<!--more-->",$content);
 	}
 
 
@@ -540,6 +540,11 @@ EOD;
 
 
 	private function getExcerpt(string $html, Entry &$entry) : string {
+		if ($entry->data['more'] ?? $entry->collection->data['more'] ?? false) {
+			$start = strpos($html,"<!--more-->");
+			if ($start === false) return $html;
+			return substr($html,0,$start);
+		}
 		$excerpt = strip_tags($html);
 		$length = $entry->collection->data['excerpt_length'] ?? \Saaze\Config::$H['global_excerpt_length'];
 
@@ -638,8 +643,8 @@ EOD;
 		}
 
 		$t1 = microtime(true);
-		$GLOBALS['MathParser'] += $t1 - $t0;
-		$GLOBALS['MathParserNcall'] += 1;
+		$GLOBALS['toHtml'] += $t1 - $t0;
+		$GLOBALS['toHtmlNcall'] += 1;
 		//$html = \FFI::string( \Saaze\Config::$H['global_ffi']->md4c_toHtml($modContent) );	// Markdown to HTML conversion
 		$html = md4c_toHtml($modContent);	// Markdown to HTML conversion with MD4C PHP extension
 		/* * * More efficient to do it in template PHP files

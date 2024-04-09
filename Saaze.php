@@ -29,9 +29,10 @@ class Saaze {
 		Config::init();
 	}
 
-	public function run() : bool {
+	public function run($query_string = null) : bool {
 		$this->collectionArray = new CollectionArray();
 		$this->templateManager = new TemplateManager();
+		if ($this->dbgPrt) file_put_contents($this->dbgFile,"\n".date('d-M-y H:i:s')." run(): query_string=|{$query_string}|, SAAZE_PATH=|".SAAZE_PATH."|, rbase=|".($GLOBALS['rbase']??'(null)')."|, strlen(rbase)=|".(strlen($GLOBALS['rbase']))."|\n",FILE_APPEND);
 
 		// See https://www.php.net/manual/en/features.commandline.webserver.php
 		// Not required if web-server handles static files directly.
@@ -67,11 +68,11 @@ class Saaze {
 		//}
 
 		// REQUEST_URI is the original URL typed by the end-user.
-		// QUERY_STRING can be either empty, or is the string resulting from any rewriting-rules within the web-server.
+		// QUERY_STRING (the part after 'index.php?') can be either empty, or is the string resulting from any rewriting-rules within the web-server.
 		// QUERY_STRING usually lacks the leading '/', therefore added below.
-		if ($this->dbgPrt) file_put_contents($this->dbgFile,"\nREQUEST_URI=|{$_SERVER['REQUEST_URI']}|, QUERY_STRING=|".($_SERVER['QUERY_STRING']??"(null)")."|\n",FILE_APPEND);
+		if ($this->dbgPrt) file_put_contents($this->dbgFile,"REQUEST_URI=|{$_SERVER['REQUEST_URI']}|, QUERY_STRING=|".($_SERVER['QUERY_STRING']??"(null)")."|\n",FILE_APPEND);
 		//$request_uri = rtrim($_SERVER['REQUEST_URI'],'/');
-		$query_string = isset($_SERVER['QUERY_STRING']) ? '/' . ltrim($_SERVER['QUERY_STRING'],'/') : null;
+		$query_string ??= isset($_SERVER['QUERY_STRING']) ? '/' . ltrim($_SERVER['QUERY_STRING'],'/') : null;
 		$request_uri = rtrim($query_string ?? $_SERVER['REQUEST_URI'],'/');
 		//$request_uri = '/' . ltrim($request_uri,'/');	// required for php -S 0:8000 case
 		if ($this->dbgPrt) file_put_contents($this->dbgFile,"request_uri=|{$request_uri}|\n",FILE_APPEND);
@@ -106,7 +107,7 @@ class Saaze {
 			if (!array_key_exists('index_route',$collection->data) || !($collection->data['index']??true)) continue;	// no index_route or index=false means no index
 			$indexStart = rtrim($collection->data['index_route'],'/');
 			$indexStartLen = strlen($indexStart);
-			if ($this->dbgPrt) file_put_contents($this->dbgFile,"indexStart=|{$indexStart}|, indexStartLen={$indexStartLen},\n",FILE_APPEND);
+			if ($this->dbgPrt) file_put_contents($this->dbgFile,"indexStart=|{$indexStart}|, indexStartLen={$indexStartLen}\n",FILE_APPEND);
 			if ($request_uri === $indexStart
 			|| (str_starts_with($request_uri,$indexStart.'/page/') && ctype_digit($page=substr($request_uri,$indexStartLen+6)))) {	// 6=strlen('/page/')
 				if ($this->dbgPrt) file_put_contents($this->dbgFile,"collection->slug=|{$collection->slug}|, match=200: indexStart=|${indexStart}|\n",FILE_APPEND);

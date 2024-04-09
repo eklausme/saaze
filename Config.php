@@ -17,7 +17,7 @@ class Config {	// Global config variables for Simplified Saaze
 		}
 
 		self::$H = array(
-			'global_rbase'          => Config::getenv2('RBASE'),
+			'global_rbase'          => $GLOBALS['rbase'] ?? Config::getenv2('RBASE') ?? '',
 			'global_path_base'      => SAAZE_PATH,
 			'global_path_content'   => SAAZE_PATH . DIRECTORY_SEPARATOR . (Config::getenv2('CONTENT_PATH')   ?? 'content'),
 			'global_path_public'    => SAAZE_PATH . DIRECTORY_SEPARATOR . (Config::getenv2('PUBLIC_PATH')    ?? 'public'),
@@ -34,8 +34,6 @@ class Config {	// Global config variables for Simplified Saaze
 		// Statistics for various functions
 		$GLOBALS['content'] = 0;
 		$GLOBALS['contentCached'] = 0;
-		$GLOBALS['excerpt'] = 0;
-		$GLOBALS['excerptCached'] = 0;
 		$GLOBALS['renderCollection'] = 0;
 		$GLOBALS['renderCollectionNcall'] = 0;
 		$GLOBALS['renderEntry'] = 0;
@@ -43,10 +41,10 @@ class Config {	// Global config variables for Simplified Saaze
 		$GLOBALS['parseEntry'] = 0;	// time spent in routine parseEntry()
 		$GLOBALS['parseEntryNcall'] = 0;	// number of calls to parseEntry() = yaml_parse()
 		$GLOBALS['parseCollectionNcall'] = 0;
-		$GLOBALS['MathParser'] = 0;	// time spent in MathParser
-		$GLOBALS['MathParserNcall'] = 0;	// number of calls
+		$GLOBALS['toHtml'] = 0;	// time spent in toHtml() without MD4 processing
+		$GLOBALS['toHtmlNcall'] = 0;	// number of calls of toHTML()
 		$GLOBALS['md2html'] = 0;	// time spent in Markdown to HTML conversion
 
-		$GLOBALS['rbase'] = "";	// relative base
+		$GLOBALS['rbase'] = \Saaze\Config::$H['global_rbase'];	// relative base
 	}
 }
