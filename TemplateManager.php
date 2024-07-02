@@ -5,7 +5,7 @@ namespace Saaze;
 
 class TemplateManager {
 	public function templateExists(string $template) : bool {
-		return file_exists(\Saaze\Config::$H['global_path_templates'] . "/{$template}.php");
+		return file_exists(\Saaze\Config::$H['global_path_templates'] . DIRECTORY_SEPARATOR . $template . '.php');
 	}
 
 
@@ -13,8 +13,8 @@ class TemplateManager {
 		$t0 = microtime(true);
 		$GLOBALS['renderCollectionNcall'] += 1;
 		$template = 'index';	//'collection';
-		if ($this->templateExists($collection->slug . '/index')) {
-			$template = $collection->slug . '/index';
+		if ($this->templateExists($collection->slug . DIRECTORY_SEPARATOR . 'index')) {
+			$template = $collection->slug . DIRECTORY_SEPARATOR . 'index';
 		}
 
 		$entries = $collection->entriesSansIndex;
@@ -26,7 +26,7 @@ class TemplateManager {
 		$url = $collection->data['index_route'];
 		if ($page > 1) $url .= "/page/{$page}";
 		$collection = $collection->data;	// make some elements invisible in template
-		$rbase = \Saaze\Config::$H['global_rbase'] ?? $GLOBALS['rbase'] ?? "/";
+		$rbase = \Saaze\Config::$H['global_rbase'] ?? $GLOBALS['rbase'] ?? '/';
 
 		ob_start();
 		require \Saaze\Config::$H['global_path_templates'] . DIRECTORY_SEPARATOR . $template . ".php";
@@ -46,14 +46,15 @@ class TemplateManager {
 		if (!empty($entryData['template']) && $this->templateExists($entryData['template'])) {
 			// Individual entries can override which template is used to display them by specifying a template in their Yaml frontmatter.
 			$template = $entryData['template'];
-		} elseif ($this->templateExists($entry->collection->slug . '/entry')) {
-			$template = $entry->collection->slug . '/entry';
+		} elseif ($this->templateExists($entry->collection->slug . DIRECTORY_SEPARATOR . 'entry')) {
+			$template = $entry->collection->slug . DIRECTORY_SEPARATOR . 'entry';
 		}
 
 		$url = $entryData['url'];
 		$title = $entryData['title'] ?? null;
+		$collection = $entry->collection->data;	// make some elements invisible in template
 		$entry = $entryData;	// make some elements invisible in template
-		$rbase = \Saaze\Config::$H['global_rbase'] ?? $GLOBALS['rbase'] ?? "/";
+		$rbase = \Saaze\Config::$H['global_rbase'] ?? $GLOBALS['rbase'] ?? '/';
 
 		ob_start();
 		require \Saaze\Config::$H['global_path_templates'] . DIRECTORY_SEPARATOR . $template . '.php';
@@ -70,7 +71,7 @@ class TemplateManager {
 		$template = 'error';
 		if ($this->templateExists("error{$code}")) $template = "error{$code}";
 		if (!$this->templateExists($template)) return "{$code} {$message}";
-		$rbase = \Saaze\Config::$H['global_rbase'] ?? $GLOBALS['rbase'] ?? "/";
+		$rbase = \Saaze\Config::$H['global_rbase'] ?? $GLOBALS['rbase'] ?? '/';
 
 		ob_start();
 		require \Saaze\Config::$H['global_path_templates'] . DIRECTORY_SEPARATOR . $template . '.php';
@@ -82,10 +83,10 @@ class TemplateManager {
 
 	public function renderGeneral(array $collections, string $template) : string {
 		if (!$this->templateExists($template)) return "";
-		$rbase = \Saaze\Config::$H['global_rbase'] ?? $GLOBALS['rbase'] ?? "/";
+		$rbase = \Saaze\Config::$H['global_rbase'] ?? $GLOBALS['rbase'] ?? '/';
 
 		ob_start();
-		require \Saaze\Config::$H['global_path_templates'] . "/" . $template . ".php";
+		require \Saaze\Config::$H['global_path_templates'] . DIRECTORY_SEPARATOR . $template . '.php';
 		$buf = ob_get_contents();
 		ob_end_clean();
 		return $buf;

@@ -42,17 +42,17 @@ class Saaze {
 		//	return false;    // serve the requested resource as-is from the surrounding web-server
 		//}
 
-		if ($_SERVER['REQUEST_URI'] === '/sitemap.html') {
+		if ($_SERVER['REQUEST_URI'] === \Saaze\Config::$H['global_rbase'] . '/sitemap.html') {
 			$collections = $this->collectionArray->getCollections();
 			foreach ($collections as $collection) $collection->getEntries();
 			echo $this->templateManager->renderGeneral($collections,'overview');
 			return true;
-		} else if ($_SERVER['REQUEST_URI'] === '/sitemap.xml') {
+		} else if ($_SERVER['REQUEST_URI'] === \Saaze\Config::$H['global_rbase'] . '/sitemap.xml') {
 			$collections = $this->collectionArray->getCollections();
 			foreach ($collections as $collection) $collection->getEntries();
 			echo $this->templateManager->renderGeneral($collections,'sitemap');
 			return true;
-		} else if ($_SERVER['REQUEST_URI'] === '/feed.xml') {
+		} else if ($_SERVER['REQUEST_URI'] === \Saaze\Config::$H['global_rbase'] . '/feed.xml') {
 			$collections = $this->collectionArray->getCollections();
 			foreach ($collections as $collection) $collection->getEntries();
 			echo $this->templateManager->renderGeneral($collections,'rss');

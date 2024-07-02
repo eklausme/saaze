@@ -546,7 +546,7 @@ EOD;
 			return substr($html,0,$start);
 		}
 		$excerpt = strip_tags($html);
-		$length = $entry->collection->data['excerpt_length'] ?? \Saaze\Config::$H['global_excerpt_length'];
+		$length = $entry->collection->data['excerpt_length'] ?? \Saaze\Config::$H['global_excerpt_length'] ?? 300;
 
 		if (strlen($excerpt) > $length) {
 			$excerptCut = substr($excerpt, 0, $length);
