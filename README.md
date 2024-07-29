@@ -31,29 +31,32 @@ wc *.php *.c
   132   530  4702 Collection.php
    50   236  2175 Config.php
    93   406  3734 Entry.php
-  679  2837 25942 MarkdownContentParser.php
+  679  2839 25949 MarkdownContentParser.php
   103   380  3569 SaazeCli.php
-  124   542  7026 Saaze.php
-   93   341  3446 TemplateManager.php
+  124   548  7134 Saaze.php
+   94   363  3654 TemplateManager.php
    83   263  2030 php_md4c_toHtml.c
- 1675  6785 66164 total
+ 1676  6815 66487 total
 ```
 
 
 # Examples
 
-Nr | Theme demo                      | GitHub                                                         | blog post about theme
----|---------------------------------|----------------------------------------------------------------|------------------------
-1 | [Saaze example](https://eklausmeier.goip.de/saaze-example) | [saaze-example](https://github.com/eklausme/saaze-example)     | n/a
-2 | [Elmar Klausmeier](https://eklausmeier.goip.de/blog) |                                                                | n/a
-3 | [J-Pilot](https://eklausmeier.goip.de/jpilot)              | [saaze-jpilot](https://github.com/eklausme/saaze-jpilot)       | [Example Theme for Simplified Saaze: J-Pilot](https://eklausmeier.goip.de/blog/2022/06-27-example-theme-for-simplified-saaze-jpilot)
-4 | [Koehntopp](https://eklausmeier.goip.de/koehntopp)         | [saaze-nukeklaus](https://github.com/eklausme/saaze-koehntopp) | [Example Theme for Simplified Saaze: Koehntopp](https://eklausmeier.goip.de/blog/2022/07-09-example-theme-for-simplified-saaze-koehntopp)
-5 | [NukeKlaus](https://eklausmeier.goip.de/nukeklaus)         | [saaze-koehntopp](https://github.com/eklausme/saaze-nukeklaus) | [Example Theme for Simplified Saaze: nukeKlaus](https://eklausmeier.goip.de/blog/2022/09-05-example-theme-for-simplified-saaze-nukeklaus)
-6 | [Mobility](https://eklausmeier.goip.de/mobility)           | [saaze-mobility](https://github.com/eklausme/saaze-mobility)   | [Example Theme for Simplified Saaze: Mobility](https://eklausmeier.goip.de/blog/2023/01-21-example-theme-for-simplified-saaze-mobility)
-7 | [Vonhoff](https://eklausmeier.goip.de/vonhoff)             | [saaze-vonhoff](https://github.com/eklausme/saaze-vonhoff)     | [Example Theme for Simplified Saaze: Vonhoff](https://eklausmeier.goip.de/blog/2023/06-05-example-theme-for-simplified-saaze-vonhoff)
-8 | [Paternoster](https://eklausmeier.goip.de/paternoster)     | [saaze-paternoster](https://github.com/eklausme/saaze-paternoster) | [Example Theme for Simplified Saaze: Paternoster](https://eklausmeier.goip.de/blog/2023/06-23-example-theme-for-simplified-saaze-paternoster)
-9 | [Panorama](https://eklausmeier.goip.de/panorama)           | [saaze-panorama](https://github.com/eklausme/saaze-panorama) | [Example Theme for Simplified Saaze: Panorama](https://eklausmeier.goip.de/blog/2023/09-27-example-theme-for-simplified-saaze-panorama)
-10| [Lemire](https://eklausmeier.goip.de/lemire)               | [saaze-lemire](https://github.com/eklausme/saaze-lemire) | [Example Theme for Simplified Saaze: Lemire](https://eklausmeier.goip.de/blog/2024/01-02-example-theme-for-simplified-saaze-lemire)
+There are already a number of example themes for _Simplified Saaze_.
+
+Nr | Theme demo                     | GitHub                                                         | post in this blog
+---|--------------------------------|----------------------------------------------------------------|-------------------
+1 | [Saaze example](/saaze-example) | [saaze-example](https://github.com/eklausme/saaze-example)     | n/a
+2 | [Elmar Klausmeier](/blog)       |                                                                | [blogging](https://eklausmeier.goip.de/aux/categories#blogging)
+3 | [J-Pilot](/jpilot)              | [saaze-jpilot](https://github.com/eklausme/saaze-jpilot)       | [Example Theme for Simplified Saaze: J-Pilot](https://eklausmeier.goip.de/blog/2022/06-27-example-theme-for-simplified-saaze-jpilot)
+4 | [Koehntopp](/koehntopp)         | [saaze-nukeklaus](https://github.com/eklausme/saaze-koehntopp) | [Example Theme for Simplified Saaze: Koehntopp](https://eklausmeier.goip.de/blog/2022/07-09-example-theme-for-simplified-saaze-koehntopp)
+5 | [NukeKlaus](/nukeklaus)         | [saaze-koehntopp](https://github.com/eklausme/saaze-nukeklaus) | [Example Theme for Simplified Saaze: nukeKlaus](https://eklausmeier.goip.de/blog/2022/09-05-example-theme-for-simplified-saaze-nukeklaus)
+6 | [Mobility](/mobility)           | [saaze-mobility](https://github.com/eklausme/saaze-mobility)   | [Example Theme for Simplified Saaze: Mobility](https://eklausmeier.goip.de/blog/2023/01-21-example-theme-for-simplified-saaze-mobility)
+7 | [Vonhoff](/vonhoff)             | [saaze-vonhoff](https://github.com/eklausme/saaze-vonhoff)     | [Example Theme for Simplified Saaze: Vonhoff](https://eklausmeier.goip.de/blog/2023/06-05-example-theme-for-simplified-saaze-vonhoff)
+8 | [Paternoster](/paternoster)     | [saaze-paternoster](https://github.com/eklausme/saaze-paternoster) | [Example Theme for Simplified Saaze: Paternoster](https://eklausmeier.goip.de/blog/2023/06-23-example-theme-for-simplified-saaze-paternoster)
+9 | [Panorama](/panorama)           | [saaze-panorama](https://github.com/eklausme/saaze-panorama)   | [Example Theme for Simplified Saaze: Panorama](https://eklausmeier.goip.de/blog/2023/09-27-example-theme-for-simplified-saaze-panorama)
+10| [Lemire](/lemire)               | [saaze-lemire](https://github.com/eklausme/saaze-lemire)       | [Example Theme for Simplified Saaze: Lemire](https://eklausmeier.goip.de/blog/2024/01-02-example-theme-for-simplified-saaze-lemire)
+11| [Wendt](/wendt)                 | [saaze-wendt](https://github.com/eklausme/saaze-wendt)         | [Example Theme for Simplified Saaze: Wendt](https://eklausmeier.goip.de/blog/2024/05-13-example-theme-for-simplified-saaze-wendt)
 
 
 # Credits
@@ -61,4 +64,5 @@ Nr | Theme demo                      | GitHub                                   
 _Simplified Saaze_ was created by [Elmar Klausmeier](https://eklausmeier.goip.de/aux/about).
 
 [Saaze](https://saaze.dev) was created by [Gilbert Pellegrom](https://gilbitron.me). Released under the MIT license.
+
 
