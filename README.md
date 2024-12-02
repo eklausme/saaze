@@ -42,7 +42,7 @@ wc *.php *.c
 
 # Examples
 
-There are already a number of example themes for _Simplified Saaze_.
+There are a number of example themes for _Simplified Saaze_.
 
 Nr | Theme demo                     | GitHub                                                         | post in this blog
 ---|--------------------------------|----------------------------------------------------------------|-------------------

@@ -41,7 +41,6 @@ class SaazeCli {
 	}
 
 	public function run() : void {
-		//$this->startXhprof();
 		$buildDest = 'build';
 		$singleFile = null;
 		$extractFile = 0;
@@ -52,9 +51,10 @@ class SaazeCli {
 		$rssXmlFeed = false;
 		$aprocs = 0;	// default is: do not fork, i.e., only one process, no child
 
-		$options = getopt("b:efhmop:rs:tv");
+		$options = getopt("b:efhmop:rs:tvx");
 		//var_dump($options);
 		if (count($options) > 0) {
+			if (isset($options['x'])) $this->startXhprof();
 			if (isset($options['b']) && strlen($options['b']) > 0 && $options['b'] !== "/") {
 				$buildDest = $options['b'];
 			}
@@ -72,7 +72,8 @@ class SaazeCli {
 					."\t-r            generate RSS feed\n"
 					."\t-s <file>     only generate static content for single file\n"
 					."\t-t            generate categories and tags\n"
-					."\t-v            version information\n");
+					."\t-v            version information\n"
+					."\t-x            run XHProf\n");
 				return;
 			}
 			if (isset($options['m'])) $sitemap = true;
@@ -86,7 +87,7 @@ class SaazeCli {
 			}
 			if (isset($options['t'])) $tags = true;
 			if (isset($options['v'])) {
-				printf("Version 2.2, 09-Apr-2024, written by Elmar Klausmeier\n");
+				printf("Version 2.5, 02-Dec-2024, written by Elmar Klausmeier\n");
 				return;
 			}
 		}
@@ -98,6 +99,6 @@ class SaazeCli {
 		if (is_null($singleFile)) $buildMgr->buildAllStatic($buildDest,$tags,$rssXmlFeed,$sitemap,$overview,$aprocs);
 		else $buildMgr->buildSingleStatic($buildDest,$singleFile,$extractFile);
 
-		//$this->stopXhprof();
+		if (isset($options['x'])) $this->stopXhprof();
 	}
 }
