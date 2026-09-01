@@ -139,7 +139,6 @@ EOD;
 	/**
 	 * Work on abc $$uvw$$ xyz.
 	 * Needs MathJax. For this you have to include:
-	 *    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
 	 *    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 	 */
 	private function displayMath(string $content) : string {
@@ -380,8 +379,9 @@ EOD;
 	 */
 	private function markmap(string $content) : string {
 		if (($this->numOfMarkmaps += 1) <= 1) {
-			$this->cssMarkmap .= "<style> .markmap > svg { width: 100%; height: 300px; } </style>\n";
-			$this->jsMarkmap .= "<script src=\"https://cdn.jsdelivr.net/npm/markmap-autoloader\"></script>\n";
+			$this->cssMarkmap .= "<style>\n\t.markmap { position:relative }\n\t.markmap > svg { width:100%; height:300px }\n</style>\n";
+			// @latest is buggy w.r.t. centering Mindmap, v0.17.0 from 21-Apr-2024 seems to be good
+			$this->jsMarkmap .= "<script src=\"https://cdn.jsdelivr.net/npm/markmap-autoloader@v0.17.0\"></script>\n";
 		}
 		return $this->myTag($content,"[markmap]","[/markmap]","\n<div class=markmap>\n","\n</div>\n");
 	}
@@ -406,11 +406,8 @@ EOD;
 			$mid = trim(substr($content,$start+9,$end-$start-9));	// get rid of spaces at begin+end
 			$midx = strpos($mid,' ');
 			if ($midx === false) break;	// lacking separator between directory & regex
-			$dirWeb = $dirWebNoPrefix = $dirWeb1 = substr($mid,0,$midx);
-			if (substr($dirWeb,0,1) === '@') {
-				$dirWebNoPrefix = substr($dirWeb1,1);
-				$dirWeb = (\Saaze\Config::$H['global_rbase'] ?? $GLOBALS['rbase'] ?? "/") . $dirWebNoPrefix;
-			}
+			$dirWeb = $dirWebNoPrefix = substr($mid,0,$midx);
+			$dirWeb = (\Saaze\Config::$H['global_rbase'] ?? $GLOBALS['rbase'] ?? "/") . $dirWebNoPrefix;
 			$dir = \Saaze\Config::$H['global_path_public'] . $dirWebNoPrefix;
 			$regex = substr($mid,$midx+1);
 			if ($i === 0) {
